@@ -48,8 +48,11 @@ Refer to `PROXY_SERVER.md` for setting up a Node.js proxy with Cloudflare Tunnel
 ## Architecture Guidelines
 *   **Privacy First:** No user data is sent to any server. Credentials stay in `sessionStorage`.
 *   **Simplicity:** Maintain the "single file" structure for `index.html` where possible to ensure ease of deployment and portability.
+*   **Visual Identity (STRICT):** The current UI style is final. This includes:
+    *   **Landing Page:** Marketing-focused "sales" page with hero section, features grid, privacy badge, and Buy Me A Coffee link.
+    *   **Player Layout:** A "Classic" pro layout featuring a main video stage with custom overlay controls and a 3-tab sidebar (Categories, Channels, Guide).
+    *   **Color Palette:** Cobalt blue accents on a primary black/secondary black background.
 *   **Smart Proxying:** The application implements a "Smart Proxy" fallback mechanism.
-    *   **Priority:** Direct Connection -> User's Proxy (`ether.tfplus.stream`) -> Public CORS Proxy (`corsproxy.io`).
-    *   **Automation:** Automatically detects connection failures (including HTTP/HTTPS mixed content blocks) and routes through the proxy chain without user intervention.
-    *   **Fallback:** If all proxies fail, a modal prompts the user to self-host.
-*   **Compatibility:** The application handles mixed content issues (HTTP vs HTTPS) via the optional proxy architecture.
+    *   **Priority:** Direct Connection -> User's Proxy (`ether.tfplus.stream`) -> Public CORS Proxy (`corsproxy.io`) -> `thingproxy.freeboard.io`.
+    *   **User-Agent:** Always signals `IPTVSmartersPro` to the proxy/provider.
+*   **Technical Stack:** HLS.js for universal stream playback and real-time "Stats for Nerds" (Bitrate, Resolution, Buffer).

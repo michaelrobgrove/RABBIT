@@ -473,7 +473,7 @@
                 
                 session.chans = streams.map(s => {
                     let link = `${url}/live/${user}/${pass}/${s.stream_id}.m3u8`;
-                    if(proxy) link = proxy + encodeURIComponent(link);
+                    // if(proxy) link = proxy + encodeURIComponent(link);
                     return { name: s.name, logo: s.stream_icon, cat: s.category_id, url: link };
                 });
 
@@ -510,7 +510,7 @@
                         curr = { name: parts[parts.length-1].trim(), cat: group };
                     } else if(line && !line.startsWith('#')) {
                         let link = line;
-                        if(proxy) link = proxy + encodeURIComponent(link);
+                        // if(proxy) link = proxy + encodeURIComponent(link);
                         if(curr.name) {
                             session.chans.push({ ...curr, url: link });
                             curr = {};
@@ -527,8 +527,18 @@
         }
 
         function saveSess() {
+            session.lastProxy = window.lastProxy; // Save active proxy
             sessionStorage.setItem('rabbitSess', JSON.stringify(session));
             startPlayer();
+        }
+
+        function checkSession() {
+            const saved = sessionStorage.getItem('rabbitSess');
+            if(saved) {
+                session = JSON.parse(saved);
+                if(session.lastProxy) window.lastProxy = session.lastProxy; // Restore active proxy
+                startPlayer();
+            }
         }
 
         function startPlayer() {
@@ -567,10 +577,66 @@
             
             if(Hls.isSupported()) {
                 if(hls) hls.destroy();
-                hls = new Hls();
+                
+                // Configure HLS to route segments through proxy
+                const config = {};
+                if(window.lastProxy) {
+                    class ProxyLoader extends Hls.DefaultConfig.loader {
+                        constructor(config) {
+                            super(config);
+                            const load = this.load.bind(this);
+                            this.load = function(context, config, callbacks) {
+                                // Store original URL to restore later
+                                context.originalUrl = context.url;
+                                
+                                // Apply Proxy if needed
+                                if (window.lastProxy && context.url.startsWith('http')) {
+                                    if (!context.url.includes(window.lastProxy)) {
+                                        context.url = window.lastProxy + encodeURIComponent(context.url);
+                                    }
+                                }
+
+                                // Intercept Success to fix Base URL resolution
+                                const originalOnSuccess = callbacks.onSuccess;
+                                callbacks.onSuccess = function(response, stats, ctx) {
+                                    // Lie to HLS.js: The Base URL is the ORIGINAL (non-proxied) URL
+                                    if(ctx.originalUrl) {
+                                        response.url = ctx.originalUrl;
+                                    }
+                                    originalOnSuccess(response, stats, ctx);
+                                };
+
+                                load(context, config, callbacks);
+                            };
+                        }
+                    }
+                    config.loader = ProxyLoader;
+                }
+
+                hls = new Hls(config);
                 hls.loadSource(ch.url);
                 hls.attachMedia(v);
                 hls.on(Hls.Events.MANIFEST_PARSED, () => v.play());
+                
+                // Error Handling
+                hls.on(Hls.Events.ERROR, function (event, data) {
+                    if (data.fatal) {
+                        switch (data.type) {
+                            case Hls.ErrorTypes.NETWORK_ERROR:
+                                console.log("fatal network error encountered, trying to recover");
+                                hls.startLoad();
+                                break;
+                            case Hls.ErrorTypes.MEDIA_ERROR:
+                                console.log("fatal media error encountered, trying to recover");
+                                hls.recoverMediaError();
+                                break;
+                            default:
+                                hls.destroy();
+                                break;
+                        }
+                    }
+                });
+
             } else if(v.canPlayType('application/vnd.apple.mpegurl')) {
                 v.src = ch.url;
                 v.play();
