@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RABBIT - Free Open-Source IPTV Player</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-black: #0a0a0a;
+            --secondary-black: #1a1a1a;
+            --cobalt-blue: #0047FF;
+            --cobalt-glow: #1e5eff;
+            --white: #ffffff;
+            --gray: #a0a0a0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--primary-black);
+            color: var(--white);
+            overflow-x: hidden;
+        }
+
+        .logo-font {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-weight: 900;
+            font-style: italic;
+        }
+
+        /* Landing Page */
+        .landing-page {
+            display: block;
+        }
+
+        .landing-page.hidden {
+            display: none;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            background: radial-gradient(ellipse at top, rgba(0, 71, 255, 0.15) 0%, var(--primary-black) 50%);
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, var(--cobalt-blue) 0%, transparent 70%);
+            opacity: 0.1;
+            top: -400px;
+            right: -200px;
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.1; }
+            50% { transform: scale(1.2); opacity: 0.15; }
+        }
+
+        .hero-content {
+            max-width: 1200px;
+            padding: 40px 20px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .hero-logo {
+            width: 120px;
+            height: 120px;
+            filter: drop-shadow(0 0 30px rgba(0, 71, 255, 0.5));
+        }
+
+        .hero h1 {
+            font-size: clamp(64px, 10vw, 120px);
+            letter-spacing: 4px;
+            background: linear-gradient(135deg, var(--white) 0%, var(--cobalt-glow) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(20px, 3vw, 32px);
+            font-weight: 300;
+            color: var(--gray);
+            margin-bottom: 60px;
+            letter-spacing: 1px;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 18px 48px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--cobalt-blue);
+            color: var(--white);
+            box-shadow: 0 0 40px rgba(0, 71, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: var(--cobalt-glow);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 60px rgba(0, 71, 255, 0.5);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--white);
+            border: 2px solid var(--white);
+        }
+
+        .btn-secondary:hover {
+            background: var(--white);
+            color: var(--primary-black);
+            transform: translateY(-3px);
+        }
+
+        /* Features Section */
+        .features {
+            padding: 120px 20px;
+            background: var(--secondary-black);
+            position: relative;
+        }
+
+        .features::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--cobalt-blue) 0%, transparent 70%);
+            opacity: 0.08;
+            bottom: -300px;
+            left: -200px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .section-title {
+            font-size: clamp(40px, 6vw, 64px);
+            text-align: center;
+            margin-bottom: 80px;
+            font-weight: 800;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.4s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--cobalt-blue);
+            box-shadow: 0 20px 60px rgba(0, 71, 255, 0.2);
+        }
+
+        .feature-icon {
+            font-size: 48px;
+            margin-bottom: 24px;
+            display: block;
+        }
+
+        .feature-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .feature-desc {
+            color: var(--gray);
+            line-height: 1.6;
+            font-size: 16px;
+        }
+
+        /* Privacy Section */
+        .privacy-section {
+            padding: 120px 20px;
+            background: var(--primary-black);
+            text-align: center;
+        }
+
+        .privacy-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%);
+            padding: 20px 40px;
+            border-radius: 100px;
+            border: 2px solid rgba(34, 197, 94, 0.3);
+            margin-bottom: 40px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .privacy-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .privacy-content h2 {
+            font-size: clamp(32px, 5vw, 48px);
+            margin-bottom: 30px;
+        }
+
+        .privacy-content p {
+            font-size: 18px;
+            color: var(--gray);
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        /* Support Section */
+        .support-section {
+            padding: 120px 20px;
+            background: var(--secondary-black);
+            text-align: center;
+        }
+
+        .support-content {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .support-content h2 {
+            font-size: clamp(32px, 5vw, 48px);
+            margin-bottom: 30px;
+        }
+
+        .support-content p {
+            font-size: 18px;
+            color: var(--gray);
+            line-height: 1.8;
+            margin-bottom: 40px;
+        }
+
+        .coffee-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 20px 48px;
+            background: #FFDD00;
+            color: #000000;
+            font-size: 20px;
+            font-weight: 700;
+            border-radius: 12px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 40px rgba(255, 221, 0, 0.3);
+        }
+
+        .coffee-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 60px rgba(255, 221, 0, 0.5);
+        }
+
+        /* Footer */
+        .footer {
+            padding: 60px 20px 40px;
+            background: var(--primary-black);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .footer-logo img {
+            width: 50px;
+            height: 50px;
+        }
+
+        .footer-logo span {
+            font-size: 36px;
+            letter-spacing: 2px;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: var(--gray);
+            text-decoration: none;
+            transition: color 0.3s ease;
+            font-weight: 500;
+        }
+
+        .footer-links a:hover {
+            color: var(--cobalt-blue);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--gray);
+            font-size: 14px;
+        }
+
+        .footer-bottom a {
+            color: var(--cobalt-blue);
+            text-decoration: none;
+        }
+
+        .footer-bottom a:hover {
+            text-decoration: underline;
+        }
+
+        /* App Page */
+        .app-page {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .app-page.active {
+            display: block;
+        }
+
+        .app-header {
+            background: var(--secondary-black);
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .app-header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .app-logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .app-logo img {
+            width: 40px;
+            height: 40px;
+        }
+
+        .app-logo span {
+            font-size: 28px;
+            letter-spacing: 2px;
+        }
+
+        .btn-back {
+            padding: 10px 24px;
+            background: transparent;
+            border: 2px solid var(--white);
+            color: var(--white);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-back:hover {
+            background: var(--white);
+            color: var(--primary-black);
+        }
+
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .privacy-notice {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%);
+            border: 2px solid rgba(34, 197, 94, 0.3);
+            padding: 20px 30px;
+            border-radius: 12px;
+            margin-bottom: 40px;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .privacy-notice strong {
+            color: #22c55e;
+        }
+
+        .login-section {
+            background: var(--secondary-black);
+            padding: 40px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 40px;
+        }
+
+        .login-section h2 {
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .method-tabs {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 14px 28px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            color: var(--white);
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: var(--cobalt-blue);
+            border-color: var(--cobalt-blue);
+            box-shadow: 0 0 30px rgba(0, 71, 255, 0.3);
+        }
+
+        .login-form {
+            display: none;
+        }
+
+        .login-form.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: var(--white);
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--cobalt-blue);
+            box-shadow: 0 0 20px rgba(0, 71, 255, 0.2);
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            background: var(--cobalt-blue);
+            border: none;
+            border-radius: 10px;
+            color: var(--white);
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-submit:hover {
+            background: var(--cobalt-glow);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(0, 71, 255, 0.4);
+        }
+
+        .player-section {
+            display: none;
+        }
+
+        .player-section.active {
+            display: block;
+        }
+
+        .player-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--secondary-black);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn-control {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--white);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-control:hover {
+            background: var(--cobalt-blue);
+            border-color: var(--cobalt-blue);
+        }
+
+        .btn-logout {
+            padding: 12px 24px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 2px solid #ef4444;
+            border-radius: 8px;
+            color: var(--white);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-logout:hover {
+            background: #ef4444;
+        }
+
+        .player-container {
+            position: relative;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        video {
+            width: 100%;
+            display: block;
+        }
+
+        .video-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .player-container:hover .video-controls {
+            opacity: 1;
+        }
+
+        .control-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50%;
+            color: var(--white);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.3s ease;
+        }
+
+        .control-icon:hover {
+            background: var(--cobalt-blue);
+        }
+
+        .volume-slider {
+            width: 120px;
+        }
+
+        .guide-container {
+            background: var(--secondary-black);
+            border-radius: 12px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .guide-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .guide-header h3 {
+            font-size: 24px;
+        }
+
+        .channel-item {
+            padding: 18px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .channel-item:hover {
+            background: rgba(0, 71, 255, 0.1);
+            border-color: var(--cobalt-blue);
+            transform: translateX(8px);
+        }
+
+        .channel-item.active {
+            background: rgba(0, 71, 255, 0.2);
+            border-color: var(--cobalt-blue);
+        }
+
+        .channel-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .channel-program {
+            font-size: 14px;
+            color: var(--gray);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            font-size: 18px;
+            color: var(--gray);
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--cobalt-blue);
+            border-radius: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 48px;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .method-tabs {
+                flex-direction: column;
+            }
+
+            .control-buttons {
+                flex-wrap: wrap;
+            }
+
+            .player-controls {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Landing Page -->
+    <div id="landingPage" class="landing-page">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <div class="logo-section">
+                    <img src="images/rabbit.svg" alt="RABBIT Logo" class="hero-logo" onerror="this.style.display='none'">
+                </div>
+                <h1 class="logo-font">RABBIT</h1>
+                <p class="hero-subtitle">The Free, Open-Source IPTV Player You Can Trust</p>
+                <div class="cta-buttons">
+                    <button class="btn btn-primary" onclick="launchApp()">Launch Player</button>
+                    <a href="https://github.com/michaelrobgrove/RABBIT" target="_blank" class="btn btn-secondary">View on GitHub</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="features">
+            <div class="container">
+                <h2 class="section-title">Built for Privacy. Built for You.</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <span class="feature-icon">🔒</span>
+                        <h3 class="feature-title">100% Private</h3>
+                        <p class="feature-desc">All credentials stored locally on your device. Zero data collection. Zero tracking. Your privacy is absolute.</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="feature-icon">🌐</span>
+                        <h3 class="feature-title">Multiple Login Methods</h3>
+                        <p class="feature-desc">Support for M3U playlists with EPG and Xtream Codes API. Connect your way.</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="feature-icon">📺</span>
+                        <h3 class="feature-title">Clean TV Guide</h3>
+                        <p class="feature-desc">4-hour program guide with intuitive channel switching. See what's playing now and next.</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="feature-icon">🎬</span>
+                        <h3 class="feature-title">Full Media Controls</h3>
+                        <p class="feature-desc">Fullscreen, volume, mute, cast support. Everything you need for the perfect viewing experience.</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="feature-icon">⚡</span>
+                        <h3 class="feature-title">Lightning Fast</h3>
+                        <p class="feature-desc">No bloat. No ads. Pure performance. Built with modern web technologies for instant loading.</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="feature-icon">💻</span>
+                        <h3 class="feature-title">Open Source</h3>
+                        <p class="feature-desc">Completely transparent code. Audit it, fork it, improve it. Community-driven development.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Privacy Section -->
+        <section class="privacy-section">
+            <div class="container">
+                <div class="privacy-content">
+                    <div class="privacy-badge">
+                        🔐 Privacy First
+                    </div>
+                    <h2>Your Data Stays Yours</h2>
+                    <p>RABBIT was built with one core principle: your privacy matters. We don't collect logs, we don't track usage, and we don't store any of your credentials on our servers.</p>
+                    <p>Everything stays in your browser's session storage. When you close the tab, it's gone. No accounts. No databases. No tracking pixels. Just a clean, honest IPTV player.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Support Section -->
+        <section class="support-section">
+            <div class="container">
+                <div class="support-content">
+                    <h2>Support the Project</h2>
+                    <p>RABBIT is completely free and always will be. If you find it useful and want to support continued development, consider buying me a coffee!</p>
+                    <a href="https://buymeacoffee.com/yourdsgnpro" target="_blank" class="coffee-btn">
+                        ☕ Buy Me a Coffee
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-logo">
+                        <img src="images/rabbit.svg" alt="RABBIT" onerror="this.style.display='none'">
+                        <span class="logo-font">RABBIT</span>
+                    </div>
+                    <div class="footer-links">
+                        <a href="https://github.com/michaelrobgrove/RABBIT" target="_blank">GitHub</a>
+                        <a href="https://yourdsgn.pro" target="_blank">YourDSGNPro</a>
+                        <a href="https://buymeacoffee.com/yourdsgnpro" target="_blank">Donate</a>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <p>Copyright © 2025 Michael R. Grove, <a href="https://yourdsgn.pro" target="_blank">YourDSGNPro</a></p>
+                    <p style="margin-top: 10px; font-size: 12px;">Open Source • Privacy First • Community Driven</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- App Page -->
+    <div id="appPage" class="app-page">
+        <header class="app-header">
+            <div class="app-header-content">
+                <div class="app-logo">
+                    <img src="images/rabbit.svg" alt="RABBIT" onerror="this.style.display='none'">
+                    <span class="logo-font">RABBIT</span>
+                </div>
+                <button class="btn-back" onclick="backToHome()">← Back to Home</button>
+            </div>
+        </header>
+
+        <div class="app-container">
+            <div class="privacy-notice">
+                <strong>🔒 Privacy First:</strong> All credentials are stored locally on your device only. We do not collect any usage logs, data, or personal information. This is a completely open-source player. Your privacy is paramount.
+            </div>
+
+            <div id="loginSection" class="login-section">
+                <h2>Connect Your IPTV Service</h2>
+                
+                <div class="method-tabs">
+                    <button class="tab-btn active" onclick="switchTab('m3u')">M3U Playlist</button>
+                    <button class="tab-btn" onclick="switchTab('xtream')">Xtream Codes</button>
+                </div>
+
+                <form id="m3uForm" class="login-form active" onsubmit="loginM3U(event)">
+                    <div class="form-group">
+                        <label>M3U Playlist URL</label>
+                        <input type="text" id="m3uUrl" placeholder="https://example.com/playlist.m3u" required>
+                    </div>
+                    <div class="form-group">
+                        <label>EPG URL (Optional)</label>
+                        <input type="text" id="epgUrl" placeholder="https://example.com/epg.xml">
+                    </div>
+                    <button type="submit" class="btn-submit">Connect</button>
+                </form>
+
+                <form id="xtreamForm" class="login-form" onsubmit="loginXtream(event)">
+                    <div class="form-group">
+                        <label>Server URL</label>
+                        <input type="text" id="xtreamUrl" placeholder="http://example.com:8080" require
