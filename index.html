@@ -580,31 +580,37 @@
             document.getElementById('channelTitle').textContent = ch.name;
             const v = document.getElementById('videoPlayer');
             
+            // Auto-detect Mixed Content or Proxy Requirement
+            const isMixed = window.location.protocol === 'https:' && ch.url.startsWith('http:');
+            let activeProxy = window.lastProxy;
+            
+            // If mixed content but no proxy selected, force the first one
+            if(isMixed && !activeProxy) {
+                activeProxy = PROXIES[0].url; 
+                console.log('Mixed content detected. Forcing proxy:', activeProxy);
+            }
+
             if(Hls.isSupported()) {
                 if(hls) hls.destroy();
                 
-                // Configure HLS to route segments through proxy
+                // Configure HLS with ProxyLoader if needed
                 const config = {};
-                if(window.lastProxy) {
+                if(activeProxy) {
                     class ProxyLoader extends Hls.DefaultConfig.loader {
                         constructor(config) {
                             super(config);
                             const load = this.load.bind(this);
                             this.load = function(context, config, callbacks) {
-                                // Store original URL to restore later
                                 context.originalUrl = context.url;
                                 
-                                // Apply Proxy if needed
-                                if (window.lastProxy && context.url.startsWith('http')) {
-                                    if (!context.url.includes(window.lastProxy)) {
-                                        context.url = window.lastProxy + encodeURIComponent(context.url);
+                                if (activeProxy && context.url.startsWith('http')) {
+                                    if (!context.url.includes(activeProxy)) {
+                                        context.url = activeProxy + encodeURIComponent(context.url);
                                     }
                                 }
 
-                                // Intercept Success to fix Base URL resolution
                                 const originalOnSuccess = callbacks.onSuccess;
                                 callbacks.onSuccess = function(response, stats, ctx) {
-                                    // Lie to HLS.js: The Base URL is the ORIGINAL (non-proxied) URL
                                     if(ctx.originalUrl) {
                                         response.url = ctx.originalUrl;
                                     }
@@ -643,6 +649,7 @@
                 });
 
             } else if(v.canPlayType('application/vnd.apple.mpegurl')) {
+                // Native Safari logic
                 v.src = ch.url;
                 v.play();
             }
