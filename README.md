@@ -42,24 +42,33 @@ In an age where every service wants your data, RABBIT stands apart:
 
 ## 🛠️ Installation
 
-### Option 1: Use the Hosted Version
-Simply visit: **[Launch RABBIT](https://michaelrobgrove.github.io/RABBIT)**
+> **⚠️ IMPORTANT: HTTP IPTV Services**  
+> If your IPTV service uses HTTP (not HTTPS), you'll need to run RABBIT locally.  
+> **Quick Start**: See [LOCAL_HOSTING.md](LOCAL_HOSTING.md) for easy 30-second setup!
 
-### Option 2: Self-Host
+### Option 1: Use the Hosted Version (HTTPS Services Only)
+Simply visit: **[Launch RABBIT](https://rabbit-30m.pages.dev)**
+
+*Note: Only works with HTTPS IPTV services due to browser security*
+
+### Option 2: Run Locally (Recommended - Works with ALL Services)
+
+**Supports both HTTP and HTTPS IPTV services!**
 
 ```bash
-# Clone the repository
+# Download
 git clone https://github.com/michaelrobgrove/RABBIT.git
-
-# Navigate to the directory
 cd RABBIT
 
-# Open index.html in your browser
-# Or serve with any static file server
+# Run local server
 python -m http.server 8000
+
+# Open: http://localhost:8000
 ```
 
-### Option 3: Deploy to Cloudflare Pages
+**Full guide**: [LOCAL_HOSTING.md](LOCAL_HOSTING.md)
+
+### Option 3: Deploy to Cloudflare Pages (HTTPS Services Only)
 
 1. Fork this repository
 2. Connect your fork to Cloudflare Pages

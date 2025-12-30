@@ -766,6 +766,95 @@
                 gap: 15px;
             }
         }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--secondary-black);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: transparent;
+            border: none;
+            color: var(--gray);
+            font-size: 24px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .modal-close:hover {
+            color: var(--white);
+        }
+
+        .modal-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .modal-body {
+            color: var(--gray);
+            line-height: 1.6;
+            font-size: 16px;
+        }
+
+        .modal-code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            margin: 15px 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--cobalt-blue);
+        }
+
+        .modal-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--cobalt-blue);
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .modal-btn:hover {
+            background: var(--cobalt-glow);
+        }
     </style>
 </head>
 <body>
@@ -891,14 +980,6 @@
                 <strong>🔒 Privacy First:</strong> All credentials are stored locally on your device only. We do not collect any usage logs, data, or personal information. This is a completely open-source player. Your privacy is paramount.
             </div>
 
-            <div class="privacy-notice" style="background: linear-gradient(135deg, rgba(255, 165, 0, 0.1) 0%, rgba(255, 165, 0, 0.05) 100%); border-color: rgba(255, 165, 0, 0.3);">
-                <strong style="color: #ffa500;">⚠️ Connection Issues?</strong> Some IPTV services may have CORS restrictions or use HTTP (which is blocked on HTTPS sites). If you experience connection issues:
-                <br>• Ask your provider for HTTPS URLs
-                <br>• Download the M3U file and host it yourself
-                <br>• Use a local HTTP server to run RABBIT
-                <br>• Check our <a href="https://github.com/michaelrobgrove/RABBIT" target="_blank" style="color: #ffa500; text-decoration: underline;">GitHub</a> for solutions
-            </div>
-
             <div id="loginSection" class="login-section">
                 <h2>Connect Your IPTV Service</h2>
                 
@@ -967,7 +1048,38 @@
         </div>
     </div>
 
+    <!-- Connection Error Modal -->
+    <div id="errorModal" class="modal-overlay">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal()">×</button>
+            <h3 class="modal-title">
+                <span style="font-size: 30px;">⚠️</span> Connection Failed
+            </h3>
+            <div class="modal-body">
+                <p>We couldn't connect to your IPTV service. This is usually because your service uses <strong>HTTP</strong>, but this web player is secure (HTTPS).</p>
+                
+                <p style="margin-top: 15px;"><strong>The Solution: Self-Host RABBIT</strong></p>
+                <p>Running RABBIT locally on your computer solves this instantly.</p>
+                
+                <div class="modal-code">
+                    1. Download RABBIT from GitHub<br>
+                    2. Run: python -m http.server 8000<br>
+                    3. Open: http://localhost:8000
+                </div>
+                
+                <a href="https://github.com/michaelrobgrove/RABBIT/blob/main/LOCAL_HOSTING.md" target="_blank" style="color: var(--white); text-decoration: underline;">View Full Instructions</a>
+                
+                <button class="modal-btn" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Modal Control
+        function closeModal() {
+            document.getElementById('errorModal').classList.remove('active');
+        }
+
         // Navigation
         function launchApp() {
             document.getElementById('landingPage').classList.add('hidden');
@@ -1037,16 +1149,36 @@
                     
                     data = await response.text();
                 } catch (directError) {
-                    // If direct fetch fails, try with CORS proxy
-                    console.log('Direct fetch failed, trying CORS proxy...');
-                    const corsProxy = 'https://corsproxy.io/?';
-                    response = await fetch(corsProxy + encodeURIComponent(m3uUrl));
+                    // Smart Proxy Logic
+                    console.log('Direct fetch failed, engaging smart proxy...');
                     
-                    if (!response.ok) {
-                        throw new Error('CORS proxy fetch failed');
+                    const corsProxies = [
+                        'https://ether.tfplus.stream/proxy?url=',
+                        'https://corsproxy.io/?url='
+                    ];
+
+                    let proxyWorked = false;
+                    
+                    for (const proxy of corsProxies) {
+                        try {
+                            const proxyUrl = proxy + encodeURIComponent(m3uUrl);
+                            console.log(`Trying proxy: ${proxyUrl}`);
+                            response = await fetch(proxyUrl);
+                            
+                            if (response.ok) {
+                                data = await response.text();
+                                proxyWorked = true;
+                                console.log('✓ Proxy connection successful');
+                                break;
+                            }
+                        } catch (e) {
+                            console.log(`Proxy failed: ${e.message}`);
+                        }
                     }
-                    
-                    data = await response.text();
+
+                    if (!proxyWorked) {
+                        throw new Error('All connection methods failed');
+                    }
                 }
 
                 const channels = parseM3U(data);
@@ -1069,7 +1201,8 @@
                 submitBtn.textContent = originalText;
                 submitBtn.disabled = false;
                 
-                alert(`Error loading M3U playlist:\n\n${error.message}\n\nTips:\n• Make sure the URL is correct\n• Check if the service allows CORS\n• Try downloading the M3U file and hosting it yourself\n• Some services require you to access the playlist from their website first`);
+                // Show custom modal instead of alert
+                document.getElementById('errorModal').classList.add('active');
             }
         }
 
@@ -1086,90 +1219,103 @@
             submitBtn.textContent = 'Connecting...';
             submitBtn.disabled = true;
 
-            // Convert HTTP to HTTPS if possible
-            const wasHttp = url.startsWith('http://');
-            if (wasHttp) {
-                console.warn('WARNING: Server uses HTTP. Trying HTTPS first...');
-            }
-
             try {
-                // Try HTTPS first
-                const httpsUrl = url.replace('http://', 'https://');
-                let finalUrl = httpsUrl;
+                let finalUrl = url;
                 let channels = null;
+                let streamUrlBase = url;
+                let useCorsProxy = false;
                 
+                // Try direct connection first
                 try {
-                    const apiUrl = `${httpsUrl}/player_api.php?username=${username}&password=${password}`;
+                    // Optimistic direct fetch
+                    const apiUrl = `${url}/player_api.php?username=${username}&password=${password}`;
                     const response = await fetch(apiUrl);
+                    
+                    if (!response.ok) throw new Error('Direct fetch failed');
+                    
                     const data = await response.json();
 
-                    if (data.user_info && data.user_info.auth === 1) {
-                        const channelsResponse = await fetch(`${httpsUrl}/player_api.php?username=${username}&password=${password}&action=get_live_streams`);
+                    if (data.user_info && (data.user_info.auth === 1 || data.user_info.status === 'Active')) {
+                        const channelsResponse = await fetch(`${url}/player_api.php?username=${username}&password=${password}&action=get_live_streams`);
                         channels = await channelsResponse.json();
-                        console.log('Connected via HTTPS');
+                        streamUrlBase = url;
+                        console.log('✓ Connected directly');
                     } else {
                         throw new Error('Authentication failed');
                     }
-                } catch (httpsError) {
-                    console.log('HTTPS failed, trying with CORS proxy...');
+                } catch (directError) {
+                    console.log('Direct connection failed, engaging smart proxy...');
                     
-                    // Try with original URL via CORS proxy
-                    const corsProxy = 'https://corsproxy.io/?';
-                    const apiUrl = `${url}/player_api.php?username=${username}&password=${password}`;
+                    // Smart Proxy Logic
+                    const corsProxies = [
+                        'https://ether.tfplus.stream/proxy?url=',
+                        'https://corsproxy.io/?url=',
+                        'https://api.allorigins.win/raw?url='
+                    ];
                     
-                    try {
-                        const response = await fetch(corsProxy + encodeURIComponent(apiUrl));
-                        const data = await response.json();
+                    let proxyWorked = false;
+                    
+                    for (const corsProxy of corsProxies) {
+                        try {
+                            const apiUrl = `${url}/player_api.php?username=${username}&password=${password}`;
+                            const proxyUrl = corsProxy + encodeURIComponent(apiUrl);
+                            console.log(`Trying proxy: ${proxyUrl}`);
+                            
+                            const response = await fetch(proxyUrl);
+                            if (!response.ok) continue;
+                            
+                            const data = await response.json();
 
-                        if (data.user_info && data.user_info.auth === 1) {
-                            const channelsResponse = await fetch(corsProxy + encodeURIComponent(`${url}/player_api.php?username=${username}&password=${password}&action=get_live_streams`));
-                            channels = await channelsResponse.json();
-                            finalUrl = corsProxy + url;
-                            console.log('Connected via CORS proxy');
-                        } else {
-                            throw new Error('Authentication failed');
+                            if (data.user_info && (data.user_info.auth === 1 || data.user_info.status === 'Active')) {
+                                const channelsUrl = `${url}/player_api.php?username=${username}&password=${password}&action=get_live_streams`;
+                                const channelsProxyUrl = corsProxy + encodeURIComponent(channelsUrl);
+                                
+                                const channelsResponse = await fetch(channelsProxyUrl);
+                                channels = await channelsResponse.json();
+                                
+                                // Store proxy URL for streams
+                                streamUrlBase = url;
+                                useCorsProxy = true;
+                                finalUrl = corsProxy;
+                                proxyWorked = true;
+                                console.log('✓ Connected via proxy');
+                                break;
+                            }
+                        } catch (proxyError) {
+                            console.log(`Proxy failed: ${proxyError.message}`);
+                            continue;
                         }
-                    } catch (proxyError) {
-                        throw new Error('Could not connect to server. The server may not support HTTPS or CORS.');
+                    }
+                    
+                    if (!proxyWorked) {
+                        throw new Error('All connection methods failed');
                     }
                 }
 
                 if (channels && Array.isArray(channels) && channels.length > 0) {
                     const session = {
                         type: 'xtream',
-                        url: finalUrl,
+                        url: streamUrlBase,
+                        originalUrl: url,
                         username: username,
                         password: password,
-                        channels: channels
+                        channels: channels,
+                        useCorsProxy: useCorsProxy,
+                        corsProxyUrl: useCorsProxy ? finalUrl : null
                     };
 
                     sessionStorage.setItem('iptvSession', JSON.stringify(session));
                     loadChannels(session);
                 } else {
-                    throw new Error('No channels found or invalid response');
+                    throw new Error('No channels found. Your subscription may be inactive.');
                 }
             } catch (error) {
                 console.error('Xtream Login Error:', error);
                 submitBtn.textContent = originalText;
                 submitBtn.disabled = false;
                 
-                let errorMsg = 'Error connecting to Xtream Codes.\n\n';
-                
-                if (wasHttp) {
-                    errorMsg += '⚠️ Your server uses HTTP, but this site requires HTTPS.\n\n';
-                    errorMsg += 'Solutions:\n';
-                    errorMsg += '1. Ask your provider for an HTTPS URL\n';
-                    errorMsg += '2. Use a local proxy/VPN\n';
-                    errorMsg += '3. Download and self-host RABBIT on HTTP\n\n';
-                }
-                
-                errorMsg += 'Please check:\n';
-                errorMsg += '• Server URL is correct\n';
-                errorMsg += '• Username and password are correct\n';
-                errorMsg += '• Your subscription is active\n';
-                errorMsg += '• Server supports CORS or use a VPN';
-                
-                alert(errorMsg);
+                // Show custom modal
+                document.getElementById('errorModal').classList.add('active');
             }
         }
 
@@ -1210,17 +1356,37 @@
             if (session.type === 'm3u') {
                 channels = session.channels;
             } else if (session.type === 'xtream') {
-                channels = session.channels.map(ch => ({
-                    name: ch.name,
-                    url: `${session.url}/live/${session.username}/${session.password}/${ch.stream_id}.m3u8`
-                }));
+                channels = session.channels.map(ch => {
+                    let streamUrl;
+                    
+                    // Build proper stream URL
+                    if (session.useCorsProxy && session.corsProxyUrl) {
+                        // Use CORS proxy for HTTP streams on HTTPS site
+                        streamUrl = session.corsProxyUrl + encodeURIComponent(
+                            `${session.originalUrl}/live/${session.username}/${session.password}/${ch.stream_id}.m3u8`
+                        );
+                    } else {
+                        // Direct stream URL
+                        streamUrl = `${session.url}/live/${session.username}/${session.password}/${ch.stream_id}.m3u8`;
+                    }
+                    
+                    return {
+                        name: ch.name,
+                        url: streamUrl
+                    };
+                });
+            }
+
+            if (channels.length === 0) {
+                channelList.innerHTML = '<div class="loading">No channels available</div>';
+                return;
             }
 
             channels.forEach((channel, index) => {
                 const channelItem = document.createElement('div');
                 channelItem.className = 'channel-item';
                 channelItem.innerHTML = `
-                    <div class="channel-name">${channel.name}</div>
+                    <div class="channel-name">${channel.name || 'Channel ' + (index + 1)}</div>
                     <div class="channel-program">Now Playing</div>
                 `;
                 channelItem.onclick = () => playChannel(channel, channelItem);
