@@ -399,9 +399,9 @@
         let statsTimer = null;
         let session = { cats: [], chans: [], activeCat: null };
         const PROXIES = [
-            { url: 'https://ether.tfplus.stream/proxy?url=', name: 'Primary Proxy' },
-            { url: 'https://corsproxy.io/?url=', name: 'Backup Proxy 1' },
-            { url: 'https://thingproxy.freeboard.io/fetch/', name: 'Backup Proxy 2' }
+            { url: 'https://corsproxy.io/?url=', name: 'Public Proxy 1 (CORS.io)' },
+            { url: 'https://thingproxy.freeboard.io/fetch/', name: 'Public Proxy 2 (ThingProxy)' },
+            { url: 'https://api.allorigins.win/raw?url=', name: 'Public Proxy 3 (AllOrigins)' }
         ];
 
         // --- INIT ---
