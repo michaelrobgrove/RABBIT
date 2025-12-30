@@ -140,10 +140,13 @@ We welcome contributions! Here's how you can help:
 
 ## 🐛 Known Issues & Limitations
 
-- **CORS Restrictions** - Some IPTV services may have CORS restrictions. Use a CORS proxy if needed.
+- **CORS Restrictions** - Some IPTV services block cross-origin requests. RABBIT includes automatic CORS proxy fallback, but if issues persist, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
+- **Mixed Content** - HTTPS sites (like Cloudflare Pages) block HTTP content. For HTTP-only IPTV servers, self-host RABBIT locally. See [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
 - **Browser Support** - Modern browsers only (Chrome, Firefox, Safari, Edge)
 - **EPG Support** - EPG parsing is basic and may not work with all formats
 - **Cast Feature** - Cast functionality requires additional Chromecast integration
+
+**Having connection issues?** Check [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for detailed solutions.
 
 ---
 
