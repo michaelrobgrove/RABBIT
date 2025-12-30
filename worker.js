@@ -1,5 +1,5 @@
-// Cloudflare Worker - RABBIT Proxy
-// Deploys to your Cloudflare account for free.
+// Cloudflare Worker - RABBIT Enhanced Proxy
+// Handles M3U8 playlists and video segments with proper CORS and caching
 
 addEventListener('fetch', event => {
   event.respondWith(handleRequest(event.request))
@@ -15,7 +15,7 @@ async function handleRequest(request) {
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, HEAD, POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-User-Agent',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-User-Agent, Range',
         'Access-Control-Max-Age': '86400',
       },
     })
@@ -26,40 +26,69 @@ async function handleRequest(request) {
   }
 
   // 2. Prepare the Request
-  // Default to Smarters Pro if no custom header is sent
   const userAgent = request.headers.get('X-User-Agent') || 'IPTVSmartersPro';
   
-  const newHeaders = new Headers(request.headers)
+  const newHeaders = new Headers()
   newHeaders.set('User-Agent', userAgent)
-  newHeaders.set('Origin', new URL(targetUrl).origin) // Lie about origin to target
-  newHeaders.set('Referer', new URL(targetUrl).origin)
-
-  // 3. Fetch from Target
+  
+  // Forward Range header for video segments (critical for seeking)
+  const rangeHeader = request.headers.get('Range')
+  if (rangeHeader) {
+    newHeaders.set('Range', rangeHeader)
+  }
+  
+  // Set origin headers to bypass IPTV server restrictions
   try {
-    const response = await fetch(targetUrl, {
+    const targetOrigin = new URL(targetUrl).origin
+    newHeaders.set('Origin', targetOrigin)
+    newHeaders.set('Referer', targetOrigin + '/')
+  } catch(e) {}
+
+  // 3. Fetch from Target with retry logic
+  let response
+  try {
+    response = await fetch(targetUrl, {
       method: request.method,
       headers: newHeaders,
-      redirect: 'follow'
+      redirect: 'follow',
+      cf: {
+        // Cloudflare-specific caching for video segments
+        cacheTtl: targetUrl.endsWith('.ts') ? 3600 : 300,
+        cacheEverything: true
+      }
     })
-
-    // 4. Prepare Response
-    const responseHeaders = new Headers(response.headers)
-    responseHeaders.set('Access-Control-Allow-Origin', '*')
-    responseHeaders.set('Access-Control-Expose-Headers', '*')
-    
-    // Fix for HLS: Ensure content-type is passed through
-    if (!responseHeaders.has('content-type')) {
-        if(targetUrl.endsWith('.m3u8')) responseHeaders.set('content-type', 'application/vnd.apple.mpegurl');
-        if(targetUrl.endsWith('.ts')) responseHeaders.set('content-type', 'video/mp2t');
-    }
-
-    return new Response(response.body, {
-      status: response.status,
-      statusText: response.statusText,
-      headers: responseHeaders
-    })
-
   } catch (err) {
-    return new Response(`Proxy Error: ${err.message}`, { status: 500 })
+    return new Response(`Proxy Fetch Error: ${err.message}`, { 
+      status: 502,
+      headers: { 'Access-Control-Allow-Origin': '*' }
+    })
   }
+
+  // 4. Prepare Response with proper CORS headers
+  const responseHeaders = new Headers(response.headers)
+  responseHeaders.set('Access-Control-Allow-Origin', '*')
+  responseHeaders.set('Access-Control-Expose-Headers', '*')
+  responseHeaders.set('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS')
+  
+  // Ensure correct content types for HLS
+  if (!responseHeaders.has('content-type')) {
+    if(targetUrl.endsWith('.m3u8') || targetUrl.includes('.m3u8')) {
+      responseHeaders.set('content-type', 'application/vnd.apple.mpegurl')
+    } else if(targetUrl.endsWith('.ts')) {
+      responseHeaders.set('content-type', 'video/mp2t')
+    }
+  }
+  
+  // Add cache headers for better performance
+  if (targetUrl.endsWith('.ts')) {
+    responseHeaders.set('Cache-Control', 'public, max-age=3600')
+  } else if (targetUrl.endsWith('.m3u8')) {
+    responseHeaders.set('Cache-Control', 'public, max-age=10')
+  }
+
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: responseHeaders
+  })
 }
