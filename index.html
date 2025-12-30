@@ -1067,7 +1067,7 @@
                     3. Open: http://localhost:8000
                 </div>
                 
-                <a href="https://github.com/michaelrobgrove/RABBIT/blob/main/LOCAL_HOSTING.md" target="_blank" style="color: var(--white); text-decoration: underline;">View Full Instructions</a>
+                <a href="https://github.com/michaelrobgrove/RABBIT/blob/main/SELF_HOSTING.md" target="_blank" style="color: var(--white); text-decoration: underline;">View Full Instructions</a>
                 
                 <button class="modal-btn" onclick="closeModal()">Close</button>
             </div>
@@ -1127,7 +1127,7 @@
             // Show loading message
             const submitBtn = event.target.querySelector('.btn-submit');
             const originalText = submitBtn.textContent;
-            submitBtn.textContent = 'Connecting...';
+            submitBtn.textContent = 'Attempting Direct Connection...';
             submitBtn.disabled = true;
 
             try {
@@ -1148,20 +1148,23 @@
                     }
                     
                     data = await response.text();
+                    submitBtn.textContent = 'Parsing Playlist...';
                 } catch (directError) {
                     // Smart Proxy Logic
                     console.log('Direct fetch failed, engaging smart proxy...');
                     
                     const corsProxies = [
-                        'https://ether.tfplus.stream/proxy?url=',
-                        'https://corsproxy.io/?url='
+                        { url: 'https://ether.tfplus.stream/proxy?url=', name: 'Primary Proxy' },
+                        { url: 'https://corsproxy.io/?url=', name: 'Backup Proxy' }
                     ];
 
                     let proxyWorked = false;
                     
-                    for (const proxy of corsProxies) {
+                    for (let i = 0; i < corsProxies.length; i++) {
+                        const proxy = corsProxies[i];
                         try {
-                            const proxyUrl = proxy + encodeURIComponent(m3uUrl);
+                            submitBtn.textContent = `Trying ${proxy.name}...`;
+                            const proxyUrl = proxy.url + encodeURIComponent(m3uUrl);
                             console.log(`Trying proxy: ${proxyUrl}`);
                             response = await fetch(proxyUrl);
                             
@@ -1179,6 +1182,7 @@
                     if (!proxyWorked) {
                         throw new Error('All connection methods failed');
                     }
+                    submitBtn.textContent = 'Parsing Playlist...';
                 }
 
                 const channels = parseM3U(data);
@@ -1216,7 +1220,7 @@
             // Show loading message
             const submitBtn = event.target.querySelector('.btn-submit');
             const originalText = submitBtn.textContent;
-            submitBtn.textContent = 'Connecting...';
+            submitBtn.textContent = 'Attempting Direct Connection...';
             submitBtn.disabled = true;
 
             try {
@@ -1236,6 +1240,7 @@
                     const data = await response.json();
 
                     if (data.user_info && (data.user_info.auth === 1 || data.user_info.status === 'Active')) {
+                        submitBtn.textContent = 'Loading Channels...';
                         const channelsResponse = await fetch(`${url}/player_api.php?username=${username}&password=${password}&action=get_live_streams`);
                         channels = await channelsResponse.json();
                         streamUrlBase = url;
@@ -1248,17 +1253,19 @@
                     
                     // Smart Proxy Logic
                     const corsProxies = [
-                        'https://ether.tfplus.stream/proxy?url=',
-                        'https://corsproxy.io/?url=',
-                        'https://api.allorigins.win/raw?url='
+                        { url: 'https://ether.tfplus.stream/proxy?url=', name: 'Primary Proxy' },
+                        { url: 'https://corsproxy.io/?url=', name: 'Backup Proxy 1' },
+                        { url: 'https://thingproxy.freeboard.io/fetch/', name: 'Backup Proxy 2' }
                     ];
                     
                     let proxyWorked = false;
                     
-                    for (const corsProxy of corsProxies) {
+                    for (let i = 0; i < corsProxies.length; i++) {
+                        const proxy = corsProxies[i];
                         try {
+                            submitBtn.textContent = `Trying ${proxy.name}...`;
                             const apiUrl = `${url}/player_api.php?username=${username}&password=${password}`;
-                            const proxyUrl = corsProxy + encodeURIComponent(apiUrl);
+                            const proxyUrl = proxy.url + encodeURIComponent(apiUrl);
                             console.log(`Trying proxy: ${proxyUrl}`);
                             
                             const response = await fetch(proxyUrl);
@@ -1267,8 +1274,9 @@
                             const data = await response.json();
 
                             if (data.user_info && (data.user_info.auth === 1 || data.user_info.status === 'Active')) {
+                                submitBtn.textContent = 'Loading Channels via Proxy...';
                                 const channelsUrl = `${url}/player_api.php?username=${username}&password=${password}&action=get_live_streams`;
-                                const channelsProxyUrl = corsProxy + encodeURIComponent(channelsUrl);
+                                const channelsProxyUrl = proxy.url + encodeURIComponent(channelsUrl);
                                 
                                 const channelsResponse = await fetch(channelsProxyUrl);
                                 channels = await channelsResponse.json();
@@ -1276,7 +1284,7 @@
                                 // Store proxy URL for streams
                                 streamUrlBase = url;
                                 useCorsProxy = true;
-                                finalUrl = corsProxy;
+                                finalUrl = proxy.url;
                                 proxyWorked = true;
                                 console.log('✓ Connected via proxy');
                                 break;
