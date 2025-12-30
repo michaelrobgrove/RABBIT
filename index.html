@@ -455,7 +455,7 @@
 
         async function loginXtream(e) {
             e.preventDefault();
-            const url = document.getElementById('xUrl').value.replace(///$/, '');
+            const url = document.getElementById('xUrl').value.replace(/\/$/, '');
             const user = document.getElementById('xUser').value;
             const pass = document.getElementById('xPass').value;
             const btn = e.target.querySelector('button');
