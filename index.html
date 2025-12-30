@@ -775,7 +775,7 @@
         <section class="hero">
             <div class="hero-content">
                 <div class="logo-section">
-                    <img src="images/rabbit.svg" alt="RABBIT Logo" class="hero-logo" onerror="this.style.display='none'">
+                    <img src="images/rabbit.svg" alt="RABBIT Logo" class="hero-logo">
                 </div>
                 <h1 class="logo-font">RABBIT</h1>
                 <p class="hero-subtitle">The Free, Open-Source IPTV Player You Can Trust</p>
@@ -857,7 +857,7 @@
             <div class="container">
                 <div class="footer-content">
                     <div class="footer-logo">
-                        <img src="images/rabbit.svg" alt="RABBIT" onerror="this.style.display='none'">
+                        <img src="images/rabbit.svg" alt="RABBIT">
                         <span class="logo-font">RABBIT</span>
                     </div>
                     <div class="footer-links">
@@ -879,7 +879,7 @@
         <header class="app-header">
             <div class="app-header-content">
                 <div class="app-logo">
-                    <img src="images/rabbit.svg" alt="RABBIT" onerror="this.style.display='none'">
+                    <img src="images/rabbit.svg" alt="RABBIT">
                     <span class="logo-font">RABBIT</span>
                 </div>
                 <button class="btn-back" onclick="backToHome()">← Back to Home</button>
@@ -914,4 +914,276 @@
                 <form id="xtreamForm" class="login-form" onsubmit="loginXtream(event)">
                     <div class="form-group">
                         <label>Server URL</label>
-                        <input type="text" id="xtreamUrl" placeholder="http://example.com:8080" require
+                        <input type="text" id="xtreamUrl" placeholder="http://example.com:8080" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="xtreamUsername" placeholder="Enter username" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="xtreamPassword" placeholder="Enter password" required>
+                    </div>
+                    <button type="submit" class="btn-submit">Connect</button>
+                </form>
+            </div>
+
+            <div id="playerSection" class="player-section">
+                <div class="player-controls">
+                    <div class="control-buttons">
+                        <button class="btn-control" onclick="toggleFullscreen()">⛶ Fullscreen</button>
+                        <button class="btn-control" onclick="toggleMute()">🔊 Mute</button>
+                        <button class="btn-control" onclick="castVideo()">📡 Cast</button>
+                    </div>
+                    <button class="btn-logout" onclick="logout()">Logout</button>
+                </div>
+
+                <div class="player-container">
+                    <video id="videoPlayer" controls>
+                        Your browser does not support video playback.
+                    </video>
+                    <div class="video-controls">
+                        <button class="control-icon" onclick="togglePlay()">▶</button>
+                        <input type="range" class="volume-slider" min="0" max="100" value="100" onchange="changeVolume(this.value)">
+                    </div>
+                </div>
+
+                <div class="guide-container">
+                    <div class="guide-header">
+                        <h3>TV Guide</h3>
+                        <span id="currentTime"></span>
+                    </div>
+                    <div id="channelList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Navigation
+        function launchApp() {
+            document.getElementById('landingPage').classList.add('hidden');
+            document.getElementById('appPage').classList.add('active');
+            checkSession();
+        }
+
+        function backToHome() {
+            document.getElementById('appPage').classList.remove('active');
+            document.getElementById('landingPage').classList.remove('hidden');
+        }
+
+        // Tab Switching
+        function switchTab(tab) {
+            const tabs = document.querySelectorAll('.tab-btn');
+            const forms = document.querySelectorAll('.login-form');
+            
+            tabs.forEach(t => t.classList.remove('active'));
+            forms.forEach(f => f.classList.remove('active'));
+            
+            if (tab === 'm3u') {
+                tabs[0].classList.add('active');
+                document.getElementById('m3uForm').classList.add('active');
+            } else {
+                tabs[1].classList.add('active');
+                document.getElementById('xtreamForm').classList.add('active');
+            }
+        }
+
+        // Session Management
+        function checkSession() {
+            const session = sessionStorage.getItem('iptvSession');
+            if (session) {
+                const data = JSON.parse(session);
+                loadChannels(data);
+            }
+        }
+
+        // M3U Login
+        async function loginM3U(event) {
+            event.preventDefault();
+            const m3uUrl = document.getElementById('m3uUrl').value;
+            const epgUrl = document.getElementById('epgUrl').value;
+
+            try {
+                const response = await fetch(m3uUrl);
+                const data = await response.text();
+                const channels = parseM3U(data);
+
+                const session = {
+                    type: 'm3u',
+                    m3uUrl: m3uUrl,
+                    epgUrl: epgUrl,
+                    channels: channels
+                };
+
+                sessionStorage.setItem('iptvSession', JSON.stringify(session));
+                loadChannels(session);
+            } catch (error) {
+                alert('Error loading M3U playlist. Please check your URL.');
+            }
+        }
+
+        // Xtream Codes Login
+        async function loginXtream(event) {
+            event.preventDefault();
+            const url = document.getElementById('xtreamUrl').value;
+            const username = document.getElementById('xtreamUsername').value;
+            const password = document.getElementById('xtreamPassword').value;
+
+            try {
+                const apiUrl = `${url}/player_api.php?username=${username}&password=${password}`;
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+
+                if (data.user_info) {
+                    const channelsResponse = await fetch(`${url}/player_api.php?username=${username}&password=${password}&action=get_live_streams`);
+                    const channels = await channelsResponse.json();
+
+                    const session = {
+                        type: 'xtream',
+                        url: url,
+                        username: username,
+                        password: password,
+                        channels: channels
+                    };
+
+                    sessionStorage.setItem('iptvSession', JSON.stringify(session));
+                    loadChannels(session);
+                }
+            } catch (error) {
+                alert('Error connecting to Xtream Codes. Please check your credentials.');
+            }
+        }
+
+        // Parse M3U
+        function parseM3U(data) {
+            const lines = data.split('\n');
+            const channels = [];
+            let currentChannel = {};
+
+            lines.forEach(line => {
+                line = line.trim();
+                if (line.startsWith('#EXTINF:')) {
+                    const match = line.match(/tvg-name="([^"]*)".*,(.*)$/);
+                    if (match) {
+                        currentChannel.name = match[2].trim();
+                    } else {
+                        currentChannel.name = line.split(',')[1].trim();
+                    }
+                } else if (line && !line.startsWith('#')) {
+                    currentChannel.url = line;
+                    channels.push({...currentChannel});
+                    currentChannel = {};
+                }
+            });
+
+            return channels;
+        }
+
+        // Load Channels
+        function loadChannels(session) {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('playerSection').classList.add('active');
+
+            const channelList = document.getElementById('channelList');
+            channelList.innerHTML = '';
+
+            let channels = [];
+            if (session.type === 'm3u') {
+                channels = session.channels;
+            } else if (session.type === 'xtream') {
+                channels = session.channels.map(ch => ({
+                    name: ch.name,
+                    url: `${session.url}/live/${session.username}/${session.password}/${ch.stream_id}.m3u8`
+                }));
+            }
+
+            channels.forEach((channel, index) => {
+                const channelItem = document.createElement('div');
+                channelItem.className = 'channel-item';
+                channelItem.innerHTML = `
+                    <div class="channel-name">${channel.name}</div>
+                    <div class="channel-program">Now Playing</div>
+                `;
+                channelItem.onclick = () => playChannel(channel, channelItem);
+                channelList.appendChild(channelItem);
+
+                if (index === 0) {
+                    playChannel(channel, channelItem);
+                }
+            });
+
+            updateTime();
+            setInterval(updateTime, 60000);
+        }
+
+        // Play Channel
+        function playChannel(channel, element) {
+            const video = document.getElementById('videoPlayer');
+            video.src = channel.url;
+            video.play();
+
+            document.querySelectorAll('.channel-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            element.classList.add('active');
+        }
+
+        // Video Controls
+        function togglePlay() {
+            const video = document.getElementById('videoPlayer');
+            if (video.paused) {
+                video.play();
+            } else {
+                video.pause();
+            }
+        }
+
+        function toggleFullscreen() {
+            const container = document.querySelector('.player-container');
+            if (!document.fullscreenElement) {
+                container.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        function toggleMute() {
+            const video = document.getElementById('videoPlayer');
+            video.muted = !video.muted;
+        }
+
+        function changeVolume(value) {
+            const video = document.getElementById('videoPlayer');
+            video.volume = value / 100;
+        }
+
+        function castVideo() {
+            alert('Cast functionality requires Chromecast integration. Coming soon!');
+        }
+
+        // Logout
+        function logout() {
+            sessionStorage.removeItem('iptvSession');
+            document.getElementById('playerSection').classList.remove('active');
+            document.getElementById('loginSection').style.display = 'block';
+            document.getElementById('m3uForm').reset();
+            document.getElementById('xtreamForm').reset();
+        }
+
+        // Update Time
+        function updateTime() {
+            const now = new Date();
+            const time = now.toLocaleTimeString('en-US', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: true 
+            });
+            const timeElement = document.getElementById('currentTime');
+            if (timeElement) {
+                timeElement.textContent = time;
+            }
+        }
+    </script>
+</body>
+</html>
