@@ -2,776 +2,592 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RABBIT - Pro IPTV Player</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RABBIT - Free Open-Source IPTV Player</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
-            --bg-dark: #000000;
-            --bg-panel: #111111;
-            --bg-selected: #222222;
-            --primary: #0047FF;
-            --accent: #1e5eff;
-            --text-main: #ffffff;
-            --text-dim: #888888;
-            --safe-area-bottom: env(safe-area-inset-bottom);
+            --primary-black: #0a0a0a;
+            --secondary-black: #1a1a1a;
+            --cobalt-blue: #0047FF;
+            --cobalt-glow: #1e5eff;
+            --white: #ffffff;
+            --gray: #a0a0a0;
         }
-
         body {
             font-family: 'Inter', sans-serif;
-            background: var(--bg-dark);
-            color: var(--text-main);
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
+            background: var(--primary-black);
+            color: var(--white);
+            overflow-x: hidden;
         }
-
-        /* --- UI UTILITIES --- */
+        .logo-font { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-style: italic; }
         .hidden { display: none !important; }
-        .logo-font { font-family: 'Barlow Condensed', sans-serif; font-style: italic; }
-        .btn { border: none; cursor: pointer; border-radius: 8px; font-weight: 600; transition: 0.2s; }
-        
-        /* --- LANDING PAGE --- */
-        #landingPage {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 2000;
-            background: radial-gradient(circle at center, #1a1a1a 0%, #000000 100%);
+
+        /* Landing Page Styles */
+        .landing-page { display: block; }
+        .hero {
+            min-height: 100vh;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 20px;
-            text-align: center;
+            background: radial-gradient(ellipse at top, rgba(0, 71, 255, 0.15) 0%, var(--primary-black) 50%);
         }
-        
-        .hero-logo { width: 120px; height: 120px; margin-bottom: 20px; }
-        .hero-title { font-size: 60px; margin-bottom: 10px; color: var(--text-main); }
-        .hero-btn { 
-            padding: 15px 40px; 
-            font-size: 18px; 
-            background: var(--primary); 
-            color: white;
-            margin-top: 30px;
+        .hero-content { text-align: center; max-width: 1200px; padding: 20px; }
+        .hero-logo { width: 120px; height: 120px; filter: drop-shadow(0 0 30px rgba(0, 71, 255, 0.5)); margin-bottom: 20px; }
+        .hero h1 {
+            font-size: clamp(64px, 10vw, 120px);
+            background: linear-gradient(135deg, var(--white) 0%, var(--cobalt-glow) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
         }
+        .btn {
+            padding: 18px 48px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+            display: inline-block;
+            transition: 0.3s;
+        }
+        .btn-primary {
+            background: var(--cobalt-blue);
+            color: var(--white);
+            box-shadow: 0 0 40px rgba(0, 71, 255, 0.3);
+        }
+        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 10px 60px rgba(0, 71, 255, 0.5); }
+        .btn-secondary { background: transparent; border: 2px solid var(--white); color: var(--white); }
+        .btn-secondary:hover { background: var(--white); color: var(--primary-black); }
 
-        /* --- MAIN APP LAYOUT --- */
-        #appPage {
+        /* App Page Styles */
+        .app-page { display: none; min-height: 100vh; }
+        .app-page.active { display: block; }
+        .app-header {
+            background: var(--secondary-black);
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
             display: flex;
-            flex-direction: column;
-            height: 100%;
-            width: 100%;
-        }
-
-        /* --- VIDEO PLAYER --- */
-        .player-wrapper {
-            width: 100%;
-            background: black;
-            position: relative;
-            flex-shrink: 0;
-            /* Default height for mobile/portrait */
-            height: 35vh; 
-            transition: height 0.3s ease;
-        }
-
-        /* Fullscreen Video Style within App */
-        .player-wrapper.expanded {
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 1500;
-        }
-
-        video {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-
-        /* Custom Controls Overlay */
-        .controls-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent 30%);
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            padding: 15px;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .player-wrapper:hover .controls-overlay,
-        .player-wrapper.active-touch .controls-overlay {
-            opacity: 1;
-        }
-
-        .controls-row {
-            display: flex;
-            align-items: center;
             justify-content: space-between;
-            gap: 15px;
-        }
-
-        .control-group {
-            display: flex;
             align-items: center;
-            gap: 15px;
         }
+        .app-logo { display: flex; align-items: center; gap: 10px; }
+        .app-logo img { width: 30px; height: 30px; }
+        .app-container { max-width: 1400px; margin: 0 auto; padding: 20px; }
 
-        .icon-btn {
-            background: rgba(255,255,255,0.1);
-            color: white;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
+        /* Login Section */
+        .login-section {
+            background: var(--secondary-black);
+            padding: 40px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+            max-width: 600px;
+            margin: 40px auto;
         }
-
-        .icon-btn:hover { background: var(--primary); }
-
-        .volume-slider { width: 100px; height: 4px; accent-color: var(--primary); }
-
-        /* Stats For Nerds */
-        .stats-overlay {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(0,0,0,0.8);
-            padding: 10px;
-            border-radius: 5px;
-            font-family: monospace;
-            font-size: 11px;
-            color: #0f0;
-            pointer-events: none;
-            z-index: 10;
-        }
-
-        /* --- CONTENT AREA (Tabs) --- */
-        .content-area {
-            flex: 1;
-            overflow-y: auto;
-            background: var(--bg-dark);
-            position: relative;
-        }
-
-        .view-section {
-            padding: 10px;
-            display: none;
-        }
-
-        .view-section.active { display: block; }
-
-        /* Grid for Categories/Channels */
-        .grid-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 10px;
-        }
-
-        .card {
-            background: var(--bg-panel);
-            padding: 15px;
-            border-radius: 10px;
+        .method-tabs { display: flex; gap: 10px; margin-bottom: 30px; }
+        .tab-btn {
+            flex: 1; padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--white);
+            border-radius: 8px;
             cursor: pointer;
-            border: 2px solid transparent;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 80px;
-            font-size: 14px;
-            font-weight: 500;
         }
+        .tab-btn.active { background: var(--cobalt-blue); border-color: var(--cobalt-blue); }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; }
+        input {
+            width: 100%; padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: var(--white);
+            font-size: 16px;
+        }
+        .btn-submit { width: 100%; padding: 14px; background: var(--cobalt-blue); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
 
-        .card:hover { background: var(--bg-selected); }
-        .card.active { border-color: var(--primary); background: rgba(0, 71, 255, 0.1); }
-
-        /* List View for Channels */
-        .list-view .card {
-            flex-direction: row;
-            justify-content: flex-start;
-            text-align: left;
-            gap: 10px;
-            min-height: 50px;
-        }
-
-        /* --- BOTTOM NAVIGATION --- */
-        .bottom-nav {
-            background: var(--bg-panel);
-            border-top: 1px solid #333;
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0 calc(10px + var(--safe-area-bottom));
-            flex-shrink: 0;
-            z-index: 1000;
-        }
-
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            color: var(--text-dim);
-            font-size: 12px;
-            cursor: pointer;
-            width: 100%;
-        }
-
-        .nav-item.active { color: var(--primary); }
-        .nav-icon { font-size: 20px; }
-
-        /* --- MODAL --- */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 3000;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .modal {
-            background: var(--bg-panel); padding: 30px; border-radius: 15px;
-            width: 90%; max-width: 400px; text-align: center; border: 1px solid #333;
-        }
-        .input-field {
-            width: 100%; padding: 15px; margin: 10px 0;
-            background: #000; border: 1px solid #333; color: white; border-radius: 8px;
-        }
+        /* Player Section */
+        .player-layout { display: flex; gap: 20px; height: calc(100vh - 100px); }
+        .player-main { flex: 2; display: flex; flex-direction: column; gap: 20px; }
+        .player-sidebar { flex: 1; background: var(--secondary-black); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; overflow: hidden; }
         
-        /* Desktop Tweaks */
-        @media (min-width: 768px) {
-            .player-wrapper { height: 100%; max-width: 60%; }
-            #appPage { flex-direction: row; }
-            .content-area { flex: 1; border-left: 1px solid #333; }
-            .bottom-nav {
-                position: absolute; bottom: 0; right: 0; width: 40%; 
-                border-top: none; border-left: 1px solid #333;
-            }
-            /* Move nav to top of content area on desktop? No, stick to request: Bottom */
-            .grid-list { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+        /* Video Container */
+        .video-container {
+            position: relative;
+            background: black;
+            border-radius: 12px;
+            overflow: hidden;
+            aspect-ratio: 16/9;
+        }
+        video { width: 100%; height: 100%; }
+        
+        /* Custom Controls */
+        .controls-overlay {
+            position: absolute; bottom: 0; left: 0; width: 100%;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
+            padding: 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .video-container:hover .controls-overlay { opacity: 1; }
+        
+        .control-btn {
+            background: rgba(255,255,255,0.1); border: none; color: white;
+            width: 40px; height: 40px; border-radius: 50%;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            font-size: 18px; transition: 0.2s;
+        }
+        .control-btn:hover { background: var(--cobalt-blue); }
+        .control-group { display: flex; align-items: center; gap: 10px; }
+        
+        /* Stats for Nerds */
+        .stats-overlay {
+            position: absolute; top: 10px; left: 10px;
+            background: rgba(0,0,0,0.8); color: #0f0;
+            padding: 10px; border-radius: 6px;
+            font-family: monospace; font-size: 12px;
+            pointer-events: none; z-index: 10;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar-tabs {
+            display: flex; border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .sidebar-tab {
+            flex: 1; padding: 15px; text-align: center; cursor: pointer;
+            font-size: 14px; font-weight: 600; color: var(--gray);
+            background: transparent; border: none;
+        }
+        .sidebar-tab.active { color: var(--white); border-bottom: 2px solid var(--cobalt-blue); background: rgba(255,255,255,0.02); }
+        
+        .sidebar-content { flex: 1; overflow-y: auto; padding: 10px; }
+        
+        /* List Items */
+        .list-item {
+            padding: 12px; border-radius: 8px; cursor: pointer;
+            margin-bottom: 5px; font-size: 14px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .list-item:hover { background: rgba(255,255,255,0.05); }
+        .list-item.active { background: rgba(0, 71, 255, 0.2); border-left: 3px solid var(--cobalt-blue); }
+        .item-icon { width: 30px; height: 30px; border-radius: 50%; background: #333; object-fit: cover; }
+
+        /* Modal */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 1000;
+            align-items: center; justify-content: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: var(--secondary-black); padding: 30px;
+            border-radius: 16px; border: 1px solid rgba(255,255,255,0.1);
+            max-width: 500px; width: 90%;
+        }
+
+        @media (max-width: 768px) {
+            .player-layout { flex-direction: column; height: auto; }
+            .hero h1 { font-size: 48px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- LANDING / LOGIN -->
-    <div id="landingPage">
-        <img src="images/rabbit.svg" alt="Logo" class="hero-logo">
-        <h1 class="logo-font hero-title">RABBIT</h1>
-        <p style="color: #888">Pro IPTV Player • HLS Support • Privacy First</p>
-        
-        <div id="loginForms" style="margin-top: 40px; width: 100%; max-width: 350px;">
-            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                <button onclick="showForm('m3u')" class="btn" style="flex:1; padding:10px; background:#222; color:#fff" id="tab-m3u">M3U</button>
-                <button onclick="showForm('xtream')" class="btn" style="flex:1; padding:10px; background:#222; color:#fff" id="tab-xtream">Xtream</button>
+    <!-- LANDING PAGE -->
+    <div id="landingPage" class="landing-page">
+        <section class="hero">
+            <div class="hero-content">
+                <img src="images/rabbit.svg" alt="Logo" class="hero-logo">
+                <h1 class="logo-font">RABBIT</h1>
+                <p style="color: var(--gray); margin-bottom: 40px; font-size: 20px;">The Free, Open-Source IPTV Player You Can Trust</p>
+                <button class="btn btn-primary" onclick="launchApp()">Launch Player</button>
             </div>
-
-            <form id="form-m3u" onsubmit="connectM3U(event)">
-                <input type="text" id="m3u-url" class="input-field" placeholder="Playlist URL (M3U)" required>
-                <button type="submit" class="btn hero-btn" style="width:100%">Connect</button>
-            </form>
-
-            <form id="form-xtream" class="hidden" onsubmit="connectXtream(event)">
-                <input type="text" id="x-url" class="input-field" placeholder="Server URL (http://...)" required>
-                <input type="text" id="x-user" class="input-field" placeholder="Username" required>
-                <input type="password" id="x-pass" class="input-field" placeholder="Password" required>
-                <button type="submit" class="btn hero-btn" style="width:100%">Connect</button>
-            </form>
-        </div>
+        </section>
     </div>
 
-    <!-- MAIN APP -->
-    <div id="appPage" class="hidden">
-        
-        <!-- PLAYER -->
-        <div class="player-wrapper" id="playerWrapper">
-            <video id="video" playsinline></video>
+    <!-- APP PAGE -->
+    <div id="appPage" class="app-page">
+        <header class="app-header">
+            <div class="app-logo">
+                <img src="images/rabbit.svg" alt="Logo">
+                <span class="logo-font" style="font-size: 24px;">RABBIT</span>
+            </div>
+            <button class="btn-secondary" style="padding: 8px 16px; font-size: 14px;" onclick="logout()">Logout</button>
+        </header>
+
+        <div class="app-container">
             
-            <!-- Stats Overlay -->
-            <div id="nerdStats" class="stats-overlay hidden">
-                <div>RES: <span id="stat-res">-</span></div>
-                <div>BIT: <span id="stat-bit">-</span> Mbps</div>
-                <div>BUF: <span id="stat-buf">-</span> s</div>
-                <div>FPS: <span id="stat-fps">-</span></div>
-                <div>CODEC: <span id="stat-codec">-</span></div>
+            <!-- LOGIN SECTION -->
+            <div id="loginSection" class="login-section">
+                <h2 style="margin-bottom: 20px;">Connect Service</h2>
+                
+                <div class="method-tabs">
+                    <button class="tab-btn active" onclick="switchTab('xtream')">Xtream Codes</button>
+                    <button class="tab-btn" onclick="switchTab('m3u')">M3U Playlist</button>
+                </div>
+
+                <!-- Xtream Form -->
+                <form id="xtreamForm" onsubmit="loginXtream(event)">
+                    <div class="form-group">
+                        <label>Server URL</label>
+                        <input type="text" id="xtreamUrl" placeholder="http://example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="xtreamUsername" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="xtreamPassword" required>
+                    </div>
+                    <button type="submit" class="btn-submit">Connect</button>
+                </form>
+
+                <!-- M3U Form -->
+                <form id="m3uForm" class="hidden" onsubmit="loginM3U(event)">
+                    <div class="form-group">
+                        <label>Playlist URL</label>
+                        <input type="text" id="m3uUrl" placeholder="http://example.com/playlist.m3u" required>
+                    </div>
+                    <button type="submit" class="btn-submit">Connect</button>
+                </form>
             </div>
 
-            <!-- Controls -->
-            <div class="controls-overlay" onclick="toggleTouchUI()">
-                <div class="controls-row">
-                    <div class="control-group">
-                        <!-- Mute -->
-                        <button class="icon-btn" onclick="toggleMute(event)">
-                            <span id="icon-mute">🔊</span>
-                        </button>
-                        <!-- Volume -->
-                        <input type="range" class="volume-slider" min="0" max="1" step="0.1" onchange="setVolume(this.value)" onclick="event.stopPropagation()">
+            <!-- PLAYER SECTION -->
+            <div id="playerSection" class="player-layout hidden">
+                <div class="player-main">
+                    <div class="video-container" id="videoContainer">
+                        <video id="videoPlayer" playsinline></video>
                         
-                        <!-- Stats Toggle -->
-                        <button class="icon-btn" onclick="toggleStats(event)" title="Stats for Nerds">
-                            <span>📊</span>
-                        </button>
-                    </div>
+                        <!-- Stats Overlay -->
+                        <div id="nerdStats" class="stats-overlay hidden">
+                            <div>RES: <span id="stat-res">-</span></div>
+                            <div>BIT: <span id="stat-bit">-</span> Mbps</div>
+                            <div>BUF: <span id="stat-buf">-</span> s</div>
+                        </div>
 
-                    <div class="control-group">
-                        <!-- PIP -->
-                        <button class="icon-btn" onclick="togglePiP(event)" id="btn-pip">
-                            <span>📺</span>
-                        </button>
-                        <!-- Cast -->
-                        <button class="icon-btn" onclick="castStream(event)">
-                            <span>📡</span>
-                        </button>
-                        <!-- Fullscreen -->
-                        <button class="icon-btn" onclick="toggleFullscreen(event)">
-                            <span>⛶</span>
-                        </button>
+                        <!-- Controls -->
+                        <div class="controls-overlay">
+                            <div class="control-group">
+                                <button class="control-btn" onclick="toggleMute()">
+                                    <span id="muteIcon">🔊</span>
+                                </button>
+                                <input type="range" min="0" max="1" step="0.1" onchange="setVolume(this.value)" style="width: 80px;">
+                                <button class="control-btn" onclick="toggleStats()" title="Stats for Nerds">📊</button>
+                            </div>
+                            <div class="control-group">
+                                <button class="control-btn" onclick="togglePiP()">📺</button>
+                                <button class="control-btn" onclick="castVideo()">📡</button>
+                                <button class="control-btn" onclick="toggleFullscreen()">⛶</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="padding: 20px; background: var(--secondary-black); border-radius: 12px;">
+                        <h2 id="currentChannelName">Select a channel</h2>
+                    </div>
+                </div>
+
+                <div class="player-sidebar">
+                    <div class="sidebar-tabs">
+                        <button class="sidebar-tab active" onclick="switchSidebar('categories')" id="tab-cat">Categories</button>
+                        <button class="sidebar-tab" onclick="switchSidebar('channels')" id="tab-chan">Channels</button>
+                        <button class="sidebar-tab" onclick="switchSidebar('guide')" id="tab-guide">Guide</button>
+                    </div>
+                    
+                    <div id="list-categories" class="sidebar-content"></div>
+                    <div id="list-channels" class="sidebar-content hidden"></div>
+                    <div id="list-guide" class="sidebar-content hidden">
+                        <div style="padding: 20px; text-align: center; color: var(--gray);">EPG Coming Soon</div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- CONTENT -->
-        <div class="content-area">
-            
-            <!-- CATEGORIES VIEW -->
-            <div id="view-categories" class="view-section active">
-                <h2 style="margin-bottom:15px; padding:0 5px;">Categories</h2>
-                <div class="grid-list" id="list-categories"></div>
-            </div>
-
-            <!-- CHANNELS VIEW -->
-            <div id="view-channels" class="view-section">
-                <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
-                    <button class="btn" style="padding:5px 10px; background:#333; color:white;" onclick="navTo('categories')">←</button>
-                    <h2 id="current-cat-name">Channels</h2>
-                </div>
-                <div class="grid-list list-view" id="list-channels"></div>
-            </div>
-
-            <!-- GUIDE VIEW -->
-            <div id="view-guide" class="view-section">
-                <h2>TV Guide</h2>
-                <p style="color:#666; margin-top:20px;">EPG implementation coming in v1.1</p>
-            </div>
-        </div>
-
-        <!-- BOTTOM NAV -->
-        <div class="bottom-nav">
-            <div class="nav-item active" onclick="navTo('categories')" id="nav-cat">
-                <span class="nav-icon">📁</span>
-                <span>Categories</span>
-            </div>
-            <div class="nav-item" onclick="navTo('channels')" id="nav-chan">
-                <span class="nav-icon">📺</span>
-                <span>Channels</span>
-            </div>
-            <div class="nav-item" onclick="navTo('guide')" id="nav-guide">
-                <span class="nav-icon">📅</span>
-                <span>Guide</span>
-            </div>
         </div>
     </div>
 
     <!-- ERROR MODAL -->
-    <div id="errorModal" class="modal-overlay hidden">
+    <div id="errorModal" class="modal-overlay">
         <div class="modal">
-            <h2 style="color: #ff4444; margin-bottom: 15px;">⚠️ Connection Failed</h2>
-            <p id="errorMsg" style="color: #ccc; margin-bottom: 20px; line-height: 1.5;"></p>
+            <h3 style="color: #ff4444; margin-bottom: 15px;">⚠️ Connection Failed</h3>
+            <p id="errorMsg" style="color: var(--gray); margin-bottom: 20px; line-height: 1.6;"></p>
             <div id="selfHostInfo" class="hidden">
-                <div style="background:#222; padding:10px; border-radius:5px; margin:15px 0; text-align:left; font-family:monospace; font-size:12px; color:var(--primary);">
-                    1. Download RABBIT<br>
-                    2. python -m http.server 8000<br>
-                    3. Go to localhost:8000
+                <p><strong>Solution: Self-Host RABBIT</strong></p>
+                <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; font-family: monospace; margin: 10px 0;">
+                    1. Download RABBIT<br>2. python -m http.server 8000
                 </div>
-                <a href="SELF_HOSTING.md" target="_blank" style="color:white;">View Instructions</a>
+                <a href="SELF_HOSTING.md" target="_blank" style="color: var(--cobalt-blue);">View Instructions</a>
             </div>
-            <button class="btn hero-btn" onclick="closeModal()" style="width:100%; margin-top:20px;">Close</button>
+            <button class="btn-submit" onclick="closeModal()" style="margin-top: 20px;">Close</button>
         </div>
     </div>
 
     <script>
-        // --- STATE ---
+        // --- STATE & PROXIES ---
         let hls = null;
-        let session = {
-            categories: [], // { id, name }
-            channels: [],   // { name, url, cat_id, logo }
-            activeCat: null
-        };
+        let statsInterval = null;
+        let session = { categories: [], channels: [], activeCat: null };
         const PROXIES = [
-            { url: 'https://ether.tfplus.stream/proxy?url=', name: 'Ether Proxy' },
-            { url: 'https://corsproxy.io/?url=', name: 'CORS.io' },
-            { url: 'https://thingproxy.freeboard.io/fetch/', name: 'ThingProxy' }
+            { url: 'https://ether.tfplus.stream/proxy?url=', name: 'Primary Proxy' },
+            { url: 'https://corsproxy.io/?url=', name: 'Backup Proxy 1' },
+            { url: 'https://thingproxy.freeboard.io/fetch/', name: 'Backup Proxy 2' }
         ];
 
-        // --- INIT ---
-        window.onload = () => {
-            // Check Session
+        // --- NAVIGATION ---
+        function launchApp() {
+            document.getElementById('landingPage').classList.add('hidden');
+            document.getElementById('appPage').classList.add('active');
+            checkSession();
+        }
+        
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('form').forEach(f => f.classList.add('hidden'));
+            
+            if(tab === 'xtream') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('xtreamForm').classList.remove('hidden');
+            } else {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('m3uForm').classList.remove('hidden');
+            }
+        }
+
+        function switchSidebar(view) {
+            document.querySelectorAll('.sidebar-tab').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.sidebar-content').forEach(c => c.classList.add('hidden'));
+            
+            document.getElementById(`tab-${view}`).classList.add('active');
+            document.getElementById(`list-${view}`).classList.remove('hidden');
+            
+            if (view === 'channels' && !session.activeCat && session.categories.length > 0) {
+                loadCategory(session.categories[0].id);
+            }
+        }
+
+        function checkSession() {
             const saved = sessionStorage.getItem('rabbitSession');
             if(saved) {
-                try {
-                    session = JSON.parse(saved);
-                    startApp();
-                } catch(e) { sessionStorage.removeItem('rabbitSession'); }
+                session = JSON.parse(saved);
+                startPlayer();
             }
-            
-            // Tab Init
-            showForm('xtream'); // Default to Xtream
-        };
-
-        function showForm(type) {
-            document.querySelectorAll('#loginForms form').forEach(f => f.classList.add('hidden'));
-            document.querySelectorAll('#loginForms button.btn').forEach(b => b.style.background = '#222');
-            document.getElementById(`form-${type}`).classList.remove('hidden');
-            document.getElementById(`tab-${type}`).style.background = 'var(--primary)';
         }
 
         // --- CONNECTION LOGIC ---
+        async function smartFetch(url, btn, type='json') {
+            btn.textContent = 'Direct Connection...';
+            try {
+                const res = await fetch(url, { headers: { 'X-User-Agent': 'IPTVSmartersPro' } });
+                if(res.ok) {
+                    window.lastProxy = '';
+                    return type==='json' ? res.json() : res.text();
+                }
+            } catch(e) {}
 
-        async function connectXtream(e) {
+            for(const p of PROXIES) {
+                btn.textContent = `Using ${p.name}...`;
+                try {
+                    const res = await fetch(p.url + encodeURIComponent(url));
+                    if(res.ok) {
+                        window.lastProxy = p.url;
+                        return type==='json' ? res.json() : res.text();
+                    }
+                } catch(e) {}
+            }
+            throw new Error('Connection failed. Try self-hosting.');
+        }
+
+        async function loginXtream(e) {
             e.preventDefault();
-            const url = document.getElementById('x-url').value.replace(///$/, '');
-            const user = document.getElementById('x-user').value;
-            const pass = document.getElementById('x-pass').value;
+            const url = document.getElementById('xtreamUrl').value.replace(///$/, '');
+            const user = document.getElementById('xtreamUsername').value;
+            const pass = document.getElementById('xtreamPassword').value;
             const btn = e.target.querySelector('button');
             const originalText = btn.textContent;
-
+            
             try {
-                // 1. Fetch Categories
+                // 1. Get Categories
                 btn.textContent = 'Fetching Categories...';
                 const catUrl = `${url}/player_api.php?username=${user}&password=${pass}&action=get_live_categories`;
-                const categories = await smartFetch(catUrl, btn);
-
-                // 2. Fetch Streams
+                const cats = await smartFetch(catUrl, btn);
+                
+                // 2. Get Streams
                 btn.textContent = 'Fetching Channels...';
                 const streamUrl = `${url}/player_api.php?username=${user}&password=${pass}&action=get_live_streams`;
                 const streams = await smartFetch(streamUrl, btn);
-
+                
                 // 3. Process
-                session.categories = categories.map(c => ({ id: c.category_id, name: c.category_name }));
+                session.categories = cats.map(c => ({ id: c.category_id, name: c.category_name }));
                 
-                // Determine base URL for streams (Direct or Proxy?)
-                // smartFetch attaches the proxy used to the result object property if possible, 
-                // but since we return JSON directly, we need a way to know WHICH proxy worked.
-                // Simplified: Re-detect proxy for stream construction.
-                
-                const proxyUsed = window.lastWorkingProxy || ''; 
-                
+                const proxy = window.lastProxy || '';
                 session.channels = streams.map(s => {
-                    let streamLink = `${url}/live/${user}/${pass}/${s.stream_id}.m3u8`;
-                    if (proxyUsed) streamLink = proxyUsed + encodeURIComponent(streamLink);
+                    let streamUrl = `${url}/live/${user}/${pass}/${s.stream_id}.m3u8`;
+                    if(proxy) streamUrl = proxy + encodeURIComponent(streamUrl);
                     
                     return {
                         name: s.name,
                         logo: s.stream_icon,
                         cat_id: s.category_id,
-                        url: streamLink
+                        url: streamUrl
                     };
                 });
 
-                saveAndStart();
-
-            } catch (err) {
+                sessionStorage.setItem('rabbitSession', JSON.stringify(session));
+                startPlayer();
+            } catch(err) {
                 showError(err.message, true);
                 btn.textContent = originalText;
             }
         }
 
-        async function connectM3U(e) {
+        async function loginM3U(e) {
             e.preventDefault();
-            const url = document.getElementById('m3u-url').value;
+            const url = document.getElementById('m3uUrl').value;
             const btn = e.target.querySelector('button');
             const originalText = btn.textContent;
 
             try {
-                btn.textContent = 'Downloading Playlist...';
-                const text = await smartFetch(url, btn, 'text');
-                
+                const data = await smartFetch(url, btn, 'text');
                 btn.textContent = 'Parsing...';
-                parseM3U(text, url); // Pass original URL to detect relative paths if needed
                 
-                saveAndStart();
-            } catch (err) {
+                const lines = data.split('\n');
+                const catSet = new Set();
+                const proxy = window.lastProxy || '';
+                
+                let current = {};
+                session.channels = [];
+                
+                lines.forEach(line => {
+                    line = line.trim();
+                    if(line.startsWith('#EXTINF')) {
+                        const grp = line.match(/group-title="([^"]*)"/);
+                        const group = grp ? grp[1] : 'Uncategorized';
+                        catSet.add(group);
+                        const parts = line.split(',');
+                        current = { name: parts[parts.length-1].trim(), cat_id: group };
+                    } else if(line && !line.startsWith('#')) {
+                        let link = line;
+                        if(proxy) link = proxy + encodeURIComponent(link);
+                        if(current.name) {
+                            session.channels.push({ ...current, url: link });
+                            current = {};
+                        }
+                    }
+                });
+                
+                session.categories = Array.from(catSet).map(c => ({ id: c, name: c }));
+                sessionStorage.setItem('rabbitSession', JSON.stringify(session));
+                startPlayer();
+            } catch(err) {
                 showError(err.message, true);
                 btn.textContent = originalText;
             }
         }
 
-        async function smartFetch(targetUrl, statusBtn, type='json') {
-            // 1. Direct
-            statusBtn.textContent = 'Direct Connection...';
-            try {
-                const res = await fetch(targetUrl, { headers: { 'X-User-Agent': 'IPTVSmartersPro' } });
-                if(res.ok) {
-                    window.lastWorkingProxy = '';
-                    return type==='json' ? res.json() : res.text();
-                }
-            } catch(e) {}
-
-            // 2. Proxies
-            for(const p of PROXIES) {
-                statusBtn.textContent = `Using ${p.name}...`;
-                try {
-                    const res = await fetch(p.url + encodeURIComponent(targetUrl));
-                    if(res.ok) {
-                        window.lastWorkingProxy = p.url;
-                        return type==='json' ? res.json() : res.text();
-                    }
-                } catch(e) {}
-            }
-
-            throw new Error('Could not connect to server. Ensure it supports HTTP/HTTPS or try self-hosting.');
-        }
-
-        function parseM3U(data, baseUrl) {
-            const lines = data.split('\n');
-            const cats = new Set();
-            session.channels = [];
+        function startPlayer() {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('playerSection').classList.remove('hidden');
             
-            // Re-detect proxy for streams if M3U was fetched via proxy
-            const proxyPrefix = window.lastWorkingProxy || '';
-
-            let currentItem = {};
-            
-            lines.forEach(line => {
-                line = line.trim();
-                if(line.startsWith('#EXTINF')) {
-                    // Extract Group
-                    const groupMatch = line.match(/group-title="([^"]*)"/);
-                    const group = groupMatch ? groupMatch[1] : 'Uncategorized';
-                    cats.add(group);
-                    
-                    // Extract Name
-                    const nameParts = line.split(',');
-                    const name = nameParts[nameParts.length-1].trim();
-                    
-                    currentItem = { name, cat_id: group };
-                } else if(line && !line.startsWith('#')) {
-                    let url = line;
-                    if (proxyPrefix) url = proxyPrefix + encodeURIComponent(url);
-                    
-                    if(currentItem.name) {
-                        session.channels.push({ ...currentItem, url });
-                        currentItem = {};
-                    }
-                }
-            });
-
-            session.categories = Array.from(cats).map(c => ({ id: c, name: c }));
-        }
-
-        function saveAndStart() {
-            sessionStorage.setItem('rabbitSession', JSON.stringify(session));
-            startApp();
-        }
-
-        function startApp() {
-            document.getElementById('landingPage').classList.add('hidden');
-            document.getElementById('appPage').classList.remove('hidden');
-            renderCategories();
-        }
-
-        // ---NAVIGATION & RENDERING ---
-
-        function navTo(view) {
-            // Update Tab UI
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            const navId = view === 'categories' ? 'nav-cat' : (view === 'channels' ? 'nav-chan' : 'nav-guide');
-            document.getElementById(navId).classList.add('active');
-
-            // Show View
-            document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
-            document.getElementById(`view-${view}`).classList.add('active');
-            
-            // Special Logic
-            if(view === 'channels' && !session.activeCat && session.categories.length > 0) {
-                // If clicked channels tab but no category selected, select first
-                loadCategory(session.categories[0].id);
-            }
-        }
-
-        function renderCategories() {
-            const container = document.getElementById('list-categories');
-            container.innerHTML = '';
+            const catList = document.getElementById('list-categories');
+            catList.innerHTML = '';
             
             session.categories.forEach(cat => {
                 const div = document.createElement('div');
-                div.className = 'card';
+                div.className = 'list-item';
                 div.textContent = cat.name;
                 div.onclick = () => loadCategory(cat.id);
-                container.appendChild(div);
+                catList.appendChild(div);
             });
         }
 
-        function loadCategory(catId) {
-            session.activeCat = catId;
-            const cat = session.categories.find(c => c.id == catId);
-            if(cat) document.getElementById('current-cat-name').textContent = cat.name;
+        function loadCategory(id) {
+            session.activeCat = id;
+            switchSidebar('channels');
             
-            renderChannels(catId);
-            navTo('channels');
-        }
-
-        function renderChannels(catId) {
-            const container = document.getElementById('list-channels');
-            container.innerHTML = '';
+            const chanList = document.getElementById('list-channels');
+            chanList.innerHTML = '';
             
-            const filtered = session.channels.filter(c => c.cat_id == catId);
-            
+            const filtered = session.channels.filter(c => c.cat_id == id);
             filtered.forEach(ch => {
                 const div = document.createElement('div');
-                div.className = 'card';
+                div.className = 'list-item';
                 div.innerHTML = `
-                    <div style="width:30px; height:30px; background:#333; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                        ${ch.logo ? `<img src="${ch.logo}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;" onerror="this.style.display='none'">` : '📺'}
-                    </div>
+                    <div class="item-icon" style="background-image: url('${ch.logo || ''}')"></div>
                     <span>${ch.name}</span>
                 `;
-                div.onclick = () => playStream(ch.url);
-                container.appendChild(div);
+                div.onclick = () => playStream(ch);
+                chanList.appendChild(div);
             });
         }
 
-        // --- PLAYER LOGIC ---
-
-        function playStream(url) {
-            const video = document.getElementById('video');
+        function playStream(channel) {
+            document.getElementById('currentChannelName').textContent = channel.name;
+            const video = document.getElementById('videoPlayer');
             
             if (Hls.isSupported()) {
                 if(hls) hls.destroy();
-                hls = new Hls({
-                    enableWorker: true,
-                    lowLatencyMode: true,
-                });
-                hls.loadSource(url);
+                hls = new Hls();
+                hls.loadSource(channel.url);
                 hls.attachMedia(video);
                 hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
             } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                // Safari
-                video.src = url;
+                video.src = channel.url;
                 video.addEventListener('loadedmetadata', () => video.play());
             }
             
-            // Start Stats Loop
-            startStatsLoop();
+            startStats();
         }
 
         // --- CONTROLS ---
-
-        function toggleMute(e) {
-            e.stopPropagation();
-            const video = document.getElementById('video');
-            video.muted = !video.muted;
-            document.getElementById('icon-mute').textContent = video.muted ? '🔇' : '🔊';
+        function toggleMute() {
+            const vid = document.getElementById('videoPlayer');
+            vid.muted = !vid.muted;
+            document.getElementById('muteIcon').textContent = vid.muted ? '🔇' : '🔊';
         }
-
-        function setVolume(val) {
-            const video = document.getElementById('video');
-            video.volume = val;
-            video.muted = false;
-            document.getElementById('icon-mute').textContent = '🔊';
-        }
-
-        async function togglePiP(e) {
-            e.stopPropagation();
-            const video = document.getElementById('video');
+        function setVolume(v) { document.getElementById('videoPlayer').volume = v; }
+        async function togglePiP() {
             try {
-                if (video !== document.pictureInPictureElement) {
-                    await video.requestPictureInPicture();
-                } else {
-                    await document.exitPictureInPicture();
-                }
-            } catch(err) { console.error(err); }
+                if(document.pictureInPictureElement) await document.exitPictureInPicture();
+                else await document.getElementById('videoPlayer').requestPictureInPicture();
+            } catch(e){}
         }
-
-        function toggleFullscreen(e) {
-            e.stopPropagation();
-            const wrapper = document.getElementById('playerWrapper');
-            if(!document.fullscreenElement) {
-                wrapper.requestFullscreen();
-                wrapper.classList.add('expanded');
-            } else {
-                document.exitFullscreen();
-                wrapper.classList.remove('expanded');
-            }
+        function toggleFullscreen() {
+            const el = document.getElementById('videoContainer');
+            if(!document.fullscreenElement) el.requestFullscreen();
+            else document.exitFullscreen();
+        }
+        function castVideo() { alert('Cast coming soon'); }
+        function logout() {
+            sessionStorage.removeItem('rabbitSession');
+            location.reload();
         }
         
-        function castStream(e) {
-            e.stopPropagation();
-            // Placeholder for Google Cast API integration
-            // Requires standardized receiver app ID
-            alert("Cast requires a hosted sender application ID. In progress.");
+        // --- ERROR ---
+        function showError(msg, isSelf) {
+            document.getElementById('errorMsg').textContent = msg;
+            if(isSelf) document.getElementById('selfHostInfo').classList.remove('hidden');
+            document.getElementById('errorModal').classList.add('active');
         }
+        function closeModal() { document.getElementById('errorModal').classList.remove('active'); }
 
-        // --- STATS FOR NERDS ---
-        
-        let statsInterval;
-        function toggleStats(e) {
-            e.stopPropagation();
-            document.getElementById('nerdStats').classList.toggle('hidden');
-        }
-
-        function startStatsLoop() {
+        // --- STATS ---
+        function toggleStats() { document.getElementById('nerdStats').classList.toggle('hidden'); }
+        function startStats() {
             if(statsInterval) clearInterval(statsInterval);
             statsInterval = setInterval(() => {
-                const video = document.getElementById('video');
-                
-                // Resolution
-                document.getElementById('stat-res').textContent = `${video.videoWidth}x${video.videoHeight}`;
-                
-                if(hls) {
-                    // Bitrate (approx)
-                    if(hls.levels && hls.currentLevel >= 0) {
-                        const level = hls.levels[hls.currentLevel];
-                        const bitrate = (level.bitrate / 1000000).toFixed(2);
-                        document.getElementById('stat-bit').textContent = bitrate;
-                        document.getElementById('stat-codec').textContent = level.videoCodec;
-                    }
+                const v = document.getElementById('videoPlayer');
+                document.getElementById('stat-res').textContent = `${v.videoWidth}x${v.videoHeight}`;
+                if(v.buffered.length) {
+                     document.getElementById('stat-buf').textContent = (v.buffered.end(v.buffered.length-1) - v.currentTime).toFixed(1);
                 }
-                
-                // Buffer
-                if(video.buffered.length > 0) {
-                    const bufEnd = video.buffered.end(video.buffered.length - 1);
-                    const health = (bufEnd - video.currentTime).toFixed(1);
-                    document.getElementById('stat-buf').textContent = health;
+                if(hls && hls.levels && hls.currentLevel >= 0) {
+                     document.getElementById('stat-bit').textContent = (hls.levels[hls.currentLevel].bitrate/1000000).toFixed(2);
                 }
-
             }, 1000);
-        }
-
-        // --- MODALS ---
-        function showError(msg, isSelfHost) {
-            document.getElementById('errorMsg').textContent = msg;
-            if(isSelfHost) document.getElementById('selfHostInfo').classList.remove('hidden');
-            document.getElementById('errorModal').classList.remove('hidden');
-        }
-        function closeModal() {
-            document.getElementById('errorModal').classList.add('hidden');
-        }
-        
-        // --- MOBILE TOUCH UX ---
-        function toggleTouchUI() {
-            const wrapper = document.getElementById('playerWrapper');
-            wrapper.classList.toggle('active-touch');
         }
 
     </script>
