@@ -399,9 +399,14 @@
         let statsTimer = null;
         let session = { cats: [], chans: [], activeCat: null };
         const PROXIES = [
-            { url: 'https://corsproxy.io/?url=', name: 'Public Proxy 1 (CORS.io)' },
-            { url: 'https://thingproxy.freeboard.io/fetch/', name: 'Public Proxy 2 (ThingProxy)' },
-            { url: 'https://api.allorigins.win/raw?url=', name: 'Public Proxy 3 (AllOrigins)' }
+            // REPLACE THIS WITH YOUR WORKER URL from DEPLOY_PROXY.md
+            { url: 'https://INSERT-YOUR-WORKER-URL-HERE.workers.dev/?url=', name: 'My CF Worker (Fastest)' },
+            
+            // Your Private Server (Needs proxy_update.sh run)
+            { url: 'https://ether.tfplus.stream/proxy?url=', name: 'Private Server' },
+            
+            // Public Backups (Slow/Limited)
+            { url: 'https://corsproxy.io/?url=', name: 'CORS.io (Backup)' }
         ];
 
         // --- INIT ---
