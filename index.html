@@ -474,12 +474,12 @@
                 const streams = await smartFetch(`${url}/player_api.php?username=${user}&password=${pass}&action=get_live_streams`, btn);
 
                 session.cats = cats.map(c => ({ id: c.category_id, name: c.category_name }));
-                const proxy = window.lastProxy || '';
+                const proxy = window.lastProxy || PROXIES[0].url; // Always use proxy for streams
                 
                 session.chans = streams.map(s => {
                     let link = `${url}/live/${user}/${pass}/${s.stream_id}.m3u8`;
-                    // if(proxy) link = proxy + encodeURIComponent(link);
-                    return { name: s.name, logo: s.stream_icon, cat: s.category_id, url: link };
+                    // Store original URL for reference, proxy will be applied at playback
+                    return { name: s.name, logo: s.stream_icon, cat: s.category_id, url: link, originalUrl: link };
                 });
 
                 saveSess();
@@ -515,9 +515,9 @@
                         curr = { name: parts[parts.length-1].trim(), cat: group };
                     } else if(line && !line.startsWith('#')) {
                         let link = line;
-                        // if(proxy) link = proxy + encodeURIComponent(link);
+                        // Store original URL for reference, proxy will be applied at playback
                         if(curr.name) {
-                            session.chans.push({ ...curr, url: link });
+                            session.chans.push({ ...curr, url: link, originalUrl: link });
                             curr = {};
                         }
                     }
@@ -580,51 +580,54 @@
             document.getElementById('channelTitle').textContent = ch.name;
             const v = document.getElementById('videoPlayer');
             
-            // Auto-detect Mixed Content or Proxy Requirement
+            // ALWAYS use proxy for video streams to avoid CORS issues
+            let activeProxy = window.lastProxy || PROXIES[0].url;
             const isMixed = window.location.protocol === 'https:' && ch.url.startsWith('http:');
-            let activeProxy = window.lastProxy;
             
-            // If mixed content but no proxy selected, force the first one
-            if(isMixed && !activeProxy) {
-                activeProxy = PROXIES[0].url; 
-                console.log('Mixed content detected. Forcing proxy:', activeProxy);
-            }
+            console.log('Playing with proxy:', activeProxy);
 
             if(Hls.isSupported()) {
                 if(hls) hls.destroy();
                 
-                // Configure HLS with ProxyLoader if needed
-                const config = {};
-                if(activeProxy) {
-                    class ProxyLoader extends Hls.DefaultConfig.loader {
-                        constructor(config) {
-                            super(config);
-                            const load = this.load.bind(this);
-                            this.load = function(context, config, callbacks) {
-                                context.originalUrl = context.url;
-                                
-                                if (activeProxy && context.url.startsWith('http')) {
-                                    if (!context.url.includes(activeProxy)) {
-                                        context.url = activeProxy + encodeURIComponent(context.url);
-                                    }
+                // Configure HLS with ProxyLoader to proxy ALL requests (manifest + segments)
+                class ProxyLoader extends Hls.DefaultConfig.loader {
+                    constructor(config) {
+                        super(config);
+                        const load = this.load.bind(this);
+                        this.load = function(context, config, callbacks) {
+                            // Store original URL
+                            context.originalUrl = context.url;
+                            
+                            // Proxy ALL HTTP/HTTPS URLs (manifest .m3u8 AND segments .ts)
+                            if (context.url.startsWith('http://') || context.url.startsWith('https://')) {
+                                // Don't double-proxy
+                                if (!context.url.includes(activeProxy.replace('?url=', ''))) {
+                                    const encodedUrl = encodeURIComponent(context.url);
+                                    context.url = activeProxy + encodedUrl;
+                                    console.log('Proxying:', context.type, context.originalUrl.substring(0, 80));
                                 }
+                            }
 
-                                const originalOnSuccess = callbacks.onSuccess;
-                                callbacks.onSuccess = function(response, stats, ctx) {
-                                    if(ctx.originalUrl) {
-                                        response.url = ctx.originalUrl;
-                                    }
-                                    originalOnSuccess(response, stats, ctx);
-                                };
-
-                                load(context, config, callbacks);
+                            // Wrap success callback to maintain original URL context
+                            const originalOnSuccess = callbacks.onSuccess;
+                            callbacks.onSuccess = function(response, stats, ctx) {
+                                if(ctx.originalUrl) {
+                                    response.url = ctx.originalUrl;
+                                }
+                                originalOnSuccess(response, stats, ctx);
                             };
-                        }
+
+                            load(context, config, callbacks);
+                        };
                     }
-                    config.loader = ProxyLoader;
                 }
 
-                hls = new Hls(config);
+                hls = new Hls({
+                    loader: ProxyLoader,
+                    debug: false,
+                    enableWorker: true,
+                    lowLatencyMode: false
+                });
                 hls.loadSource(ch.url);
                 hls.attachMedia(v);
                 hls.on(Hls.Events.MANIFEST_PARSED, () => v.play());
@@ -649,8 +652,8 @@
                 });
 
             } else if(v.canPlayType('application/vnd.apple.mpegurl')) {
-                // Native Safari logic
-                v.src = ch.url;
+                // Native Safari - proxy the URL manually
+                v.src = activeProxy + encodeURIComponent(ch.url);
                 v.play();
             }
             startStats();
