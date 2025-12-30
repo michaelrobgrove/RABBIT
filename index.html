@@ -26,174 +26,184 @@
         }
         .logo-font { font-family: 'Barlow Condensed', sans-serif; font-weight: 900; font-style: italic; }
         .hidden { display: none !important; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
 
-        /* Landing Page Styles */
+        /* --- LANDING PAGE --- */
         .landing-page { display: block; }
+        
+        /* Hero */
         .hero {
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             background: radial-gradient(ellipse at top, rgba(0, 71, 255, 0.15) 0%, var(--primary-black) 50%);
+            position: relative; overflow: hidden;
         }
-        .hero-content { text-align: center; max-width: 1200px; padding: 20px; }
+        .hero::before {
+            content: ''; position: absolute; top: -400px; right: -200px;
+            width: 800px; height: 800px;
+            background: radial-gradient(circle, var(--cobalt-blue) 0%, transparent 70%);
+            opacity: 0.1;
+        }
+        .hero-content { text-align: center; position: relative; z-index: 1; }
         .hero-logo { width: 120px; height: 120px; filter: drop-shadow(0 0 30px rgba(0, 71, 255, 0.5)); margin-bottom: 20px; }
         .hero h1 {
             font-size: clamp(64px, 10vw, 120px);
             background: linear-gradient(135deg, var(--white) 0%, var(--cobalt-glow) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 20px;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 20px; letter-spacing: 2px;
         }
+        .hero-subtitle { font-size: clamp(20px, 3vw, 24px); color: var(--gray); margin-bottom: 50px; font-weight: 300; }
+        
         .btn {
-            padding: 18px 48px;
-            font-size: 18px;
-            font-weight: 600;
-            border-radius: 12px;
-            cursor: pointer;
-            border: none;
-            text-decoration: none;
-            display: inline-block;
-            transition: 0.3s;
+            padding: 18px 48px; font-size: 18px; font-weight: 600;
+            border-radius: 12px; cursor: pointer; border: none;
+            text-decoration: none; display: inline-block; transition: 0.3s;
         }
         .btn-primary {
-            background: var(--cobalt-blue);
-            color: var(--white);
+            background: var(--cobalt-blue); color: var(--white);
             box-shadow: 0 0 40px rgba(0, 71, 255, 0.3);
         }
         .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 10px 60px rgba(0, 71, 255, 0.5); }
         .btn-secondary { background: transparent; border: 2px solid var(--white); color: var(--white); }
         .btn-secondary:hover { background: var(--white); color: var(--primary-black); }
 
-        /* App Page Styles */
+        /* Features */
+        .features { padding: 100px 0; background: var(--secondary-black); }
+        .section-title { font-size: 48px; text-align: center; margin-bottom: 60px; font-weight: 800; }
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 40px; }
+        .feature-card {
+            background: rgba(255,255,255,0.03); padding: 40px;
+            border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);
+            transition: 0.3s;
+        }
+        .feature-card:hover { transform: translateY(-10px); border-color: var(--cobalt-blue); }
+        .feature-icon { font-size: 40px; margin-bottom: 20px; display: block; }
+        .feature-title { font-size: 24px; font-weight: 700; margin-bottom: 15px; }
+        .feature-desc { color: var(--gray); line-height: 1.6; }
+
+        /* Privacy */
+        .privacy-section { padding: 100px 0; text-align: center; }
+        .privacy-badge {
+            display: inline-flex; align-items: center; gap: 10px;
+            background: rgba(34, 197, 94, 0.1); color: #22c55e;
+            padding: 10px 20px; border-radius: 50px; border: 1px solid rgba(34, 197, 94, 0.2);
+            margin-bottom: 30px; font-weight: 600;
+        }
+        .privacy-content p { color: var(--gray); font-size: 18px; line-height: 1.8; max-width: 800px; margin: 0 auto 20px; }
+
+        /* Support */
+        .support-section { padding: 100px 0; background: var(--secondary-black); text-align: center; }
+        .coffee-btn {
+            background: #FFDD00; color: black; display: inline-flex; align-items: center; gap: 10px;
+            box-shadow: 0 10px 40px rgba(255, 221, 0, 0.2);
+        }
+        .coffee-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 50px rgba(255, 221, 0, 0.4); }
+
+        /* Footer */
+        .footer { padding: 60px 0; border-top: 1px solid rgba(255,255,255,0.1); }
+        .footer-content { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
+        .footer-links a { color: var(--gray); text-decoration: none; margin-left: 30px; transition: 0.2s; }
+        .footer-links a:hover { color: var(--cobalt-blue); }
+
+
+        /* --- APP INTERFACE --- */
         .app-page { display: none; min-height: 100vh; }
         .app-page.active { display: block; }
+        
         .app-header {
-            background: var(--secondary-black);
-            padding: 15px 20px;
+            background: var(--secondary-black); padding: 15px 20px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            display: flex; justify-content: space-between; align-items: center;
         }
-        .app-logo { display: flex; align-items: center; gap: 10px; }
-        .app-logo img { width: 30px; height: 30px; }
-        .app-container { max-width: 1400px; margin: 0 auto; padding: 20px; }
-
-        /* Login Section */
-        .login-section {
-            background: var(--secondary-black);
-            padding: 40px;
-            border-radius: 16px;
-            border: 1px solid rgba(255,255,255,0.1);
-            max-width: 600px;
-            margin: 40px auto;
-        }
-        .method-tabs { display: flex; gap: 10px; margin-bottom: 30px; }
-        .tab-btn {
-            flex: 1; padding: 12px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: var(--white);
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        .tab-btn.active { background: var(--cobalt-blue); border-color: var(--cobalt-blue); }
+        
+        /* Login Forms */
+        .login-container { max-width: 500px; margin: 60px auto; padding: 40px; background: var(--secondary-black); border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); }
+        .tabs { display: flex; gap: 10px; margin-bottom: 30px; }
+        .tab-btn { flex: 1; padding: 12px; background: rgba(255,255,255,0.05); border: none; color: white; border-radius: 8px; cursor: pointer; }
+        .tab-btn.active { background: var(--cobalt-blue); }
+        
         .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; }
+        label { display: block; margin-bottom: 8px; font-size: 14px; color: var(--gray); }
         input {
-            width: 100%; padding: 12px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 8px;
-            color: var(--white);
-            font-size: 16px;
+            width: 100%; padding: 14px; background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
+            color: white; font-size: 16px;
         }
-        .btn-submit { width: 100%; padding: 14px; background: var(--cobalt-blue); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        .btn-submit { width: 100%; padding: 16px; background: var(--cobalt-blue); border: none; color: white; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; }
 
-        /* Player Section */
-        .player-layout { display: flex; gap: 20px; height: calc(100vh - 100px); }
-        .player-main { flex: 2; display: flex; flex-direction: column; gap: 20px; }
-        .player-sidebar { flex: 1; background: var(--secondary-black); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; overflow: hidden; }
-        
-        /* Video Container */
-        .video-container {
-            position: relative;
-            background: black;
-            border-radius: 12px;
-            overflow: hidden;
-            aspect-ratio: 16/9;
+        /* Player Layout */
+        .player-layout { display: flex; height: calc(100vh - 70px); }
+        .main-stage { flex: 1; display: flex; flex-direction: column; background: #000; position: relative; }
+        .sidebar {
+            width: 350px; background: var(--secondary-black); border-left: 1px solid rgba(255,255,255,0.1);
+            display: flex; flex-direction: column;
         }
-        video { width: 100%; height: 100%; }
-        
-        /* Custom Controls */
-        .controls-overlay {
+
+        /* Video Area */
+        .video-wrapper { 
+            flex: 1; position: relative; display: flex; align-items: center; justify-content: center;
+            background: black; 
+        }
+        video { width: 100%; height: 100%; max-height: 100vh; }
+
+        /* Controls */
+        .controls {
             position: absolute; bottom: 0; left: 0; width: 100%;
             background: linear-gradient(transparent, rgba(0,0,0,0.9));
-            padding: 20px;
-            display: flex; justify-content: space-between; align-items: center;
-            opacity: 0; transition: opacity 0.3s;
+            padding: 20px; display: flex; align-items: center; justify-content: space-between;
+            opacity: 0; transition: 0.3s;
         }
-        .video-container:hover .controls-overlay { opacity: 1; }
+        .video-wrapper:hover .controls { opacity: 1; }
         
-        .control-btn {
-            background: rgba(255,255,255,0.1); border: none; color: white;
-            width: 40px; height: 40px; border-radius: 50%;
-            cursor: pointer; display: flex; align-items: center; justify-content: center;
-            font-size: 18px; transition: 0.2s;
+        .ctrl-btn {
+            background: rgba(255,255,255,0.1); width: 40px; height: 40px; border-radius: 50%;
+            border: none; color: white; cursor: pointer; font-size: 18px;
+            display: flex; align-items: center; justify-content: center; margin-left: 10px;
         }
-        .control-btn:hover { background: var(--cobalt-blue); }
-        .control-group { display: flex; align-items: center; gap: 10px; }
-        
-        /* Stats for Nerds */
-        .stats-overlay {
-            position: absolute; top: 10px; left: 10px;
-            background: rgba(0,0,0,0.8); color: #0f0;
-            padding: 10px; border-radius: 6px;
-            font-family: monospace; font-size: 12px;
+        .ctrl-btn:hover { background: var(--cobalt-blue); }
+        .ctrl-group { display: flex; align-items: center; }
+
+        /* Stats Overlay */
+        .stats-box {
+            position: absolute; top: 20px; left: 20px;
+            background: rgba(0,0,0,0.8); padding: 15px; border-radius: 8px;
+            font-family: monospace; font-size: 12px; color: #0f0;
             pointer-events: none; z-index: 10;
         }
 
-        /* Sidebar Navigation */
-        .sidebar-tabs {
-            display: flex; border-bottom: 1px solid rgba(255,255,255,0.1);
+        /* Sidebar Nav */
+        .sb-tabs { display: flex; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sb-tab {
+            flex: 1; padding: 15px; background: transparent; border: none;
+            color: var(--gray); cursor: pointer; font-weight: 600;
         }
-        .sidebar-tab {
-            flex: 1; padding: 15px; text-align: center; cursor: pointer;
-            font-size: 14px; font-weight: 600; color: var(--gray);
-            background: transparent; border: none;
-        }
-        .sidebar-tab.active { color: var(--white); border-bottom: 2px solid var(--cobalt-blue); background: rgba(255,255,255,0.02); }
+        .sb-tab.active { color: white; border-bottom: 2px solid var(--cobalt-blue); background: rgba(255,255,255,0.03); }
         
-        .sidebar-content { flex: 1; overflow-y: auto; padding: 10px; }
-        
-        /* List Items */
+        .sb-list { flex: 1; overflow-y: auto; padding: 10px; }
         .list-item {
-            padding: 12px; border-radius: 8px; cursor: pointer;
-            margin-bottom: 5px; font-size: 14px;
-            display: flex; align-items: center; gap: 10px;
+            padding: 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px;
+            margin-bottom: 4px; font-size: 14px;
         }
         .list-item:hover { background: rgba(255,255,255,0.05); }
-        .list-item.active { background: rgba(0, 71, 255, 0.2); border-left: 3px solid var(--cobalt-blue); }
-        .item-icon { width: 30px; height: 30px; border-radius: 50%; background: #333; object-fit: cover; }
+        .list-item.active { background: rgba(0,71,255,0.15); color: var(--cobalt-blue); }
+        .ch-logo { width: 32px; height: 32px; border-radius: 50%; background: #333; object-fit: cover; }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .player-layout { flex-direction: column; }
+            .sidebar { width: 100%; height: 40vh; }
+        }
 
         /* Modal */
         .modal-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); z-index: 1000;
-            align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center;
         }
         .modal-overlay.active { display: flex; }
-        .modal {
-            background: var(--secondary-black); padding: 30px;
-            border-radius: 16px; border: 1px solid rgba(255,255,255,0.1);
-            max-width: 500px; width: 90%;
-        }
+        .modal { background: var(--secondary-black); padding: 30px; border-radius: 16px; max-width: 450px; width: 90%; border: 1px solid #333; }
 
-        @media (max-width: 768px) {
-            .player-layout { flex-direction: column; height: auto; }
-            .hero h1 { font-size: 48px; }
-        }
     </style>
 </head>
 <body>
@@ -202,393 +212,414 @@
     <div id="landingPage" class="landing-page">
         <section class="hero">
             <div class="hero-content">
-                <img src="images/rabbit.svg" alt="Logo" class="hero-logo">
+                <img src="images/rabbit.svg" alt="RABBIT" class="hero-logo">
                 <h1 class="logo-font">RABBIT</h1>
-                <p style="color: var(--gray); margin-bottom: 40px; font-size: 20px;">The Free, Open-Source IPTV Player You Can Trust</p>
-                <button class="btn btn-primary" onclick="launchApp()">Launch Player</button>
+                <p class="hero-subtitle">The Free, Open-Source IPTV Player You Can Trust</p>
+                <div style="display: flex; gap: 20px; justify-content: center;">
+                    <button class="btn btn-primary" onclick="launchApp()">Launch Player</button>
+                    <a href="https://github.com/michaelrobgrove/RABBIT" target="_blank" class="btn btn-secondary">View on GitHub</a>
+                </div>
             </div>
         </section>
+
+        <section class="features">
+            <div class="container">
+                <h2 class="section-title">Why RABBIT?</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <span class="feature-icon">🔒</span>
+                        <h3 class="feature-title">100% Private</h3>
+                        <p class="feature-desc">Credentials stored locally. No tracking. No data collection.</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="feature-icon">⚡</span>
+                        <h3 class="feature-title">Lightning Fast</h3>
+                        <p class="feature-desc">Built with HLS.js for instant playback and buffer-free streaming.</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="feature-icon">🌐</span>
+                        <h3 class="feature-title">Universal Support</h3>
+                        <p class="feature-desc">Works with M3U Playlists and Xtream Codes API.</p>
+                    </div>
+                    <div class="feature-card">
+                        <span class="feature-icon">📊</span>
+                        <h3 class="feature-title">Pro Features</h3>
+                        <p class="feature-desc">Stats for Nerds, PiP, Casting, and clean TV Guide interface.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="privacy-section">
+            <div class="container">
+                <div class="privacy-content">
+                    <div class="privacy-badge">🔐 Privacy First</div>
+                    <h2>Your Data Stays Yours</h2>
+                    <p>RABBIT was built with one core principle: your privacy matters. We don't collect logs, we don't track usage, and we don't store any of your credentials on our servers. Everything stays in your browser's session storage.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="support-section">
+            <div class="container">
+                <h2>Support the Project</h2>
+                <p style="color: var(--gray); margin: 20px 0 40px;">If you find RABBIT useful, consider buying me a coffee!</p>
+                <a href="https://buymeacoffee.com/yourdsgnpro" target="_blank" class="btn coffee-btn">☕ Buy Me a Coffee</a>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-content">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <img src="images/rabbit.svg" width="30" alt="Logo">
+                        <span class="logo-font" style="font-size: 24px;">RABBIT</span>
+                    </div>
+                    <div class="footer-links">
+                        <a href="https://github.com/michaelrobgrove/RABBIT" target="_blank">GitHub</a>
+                        <a href="https://yourdsgn.pro" target="_blank">YourDSGNPro</a>
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 40px; color: #555; font-size: 14px;">
+                    Copyright © 2025 Michael R. Grove • Open Source • Privacy First
+                </div>
+            </div>
+        </footer>
     </div>
 
     <!-- APP PAGE -->
     <div id="appPage" class="app-page">
         <header class="app-header">
-            <div class="app-logo">
-                <img src="images/rabbit.svg" alt="Logo">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <img src="images/rabbit.svg" width="30" alt="Logo">
                 <span class="logo-font" style="font-size: 24px;">RABBIT</span>
             </div>
-            <button class="btn-secondary" style="padding: 8px 16px; font-size: 14px;" onclick="logout()">Logout</button>
+            <button onclick="logout()" style="background:none; border:1px solid #555; color:white; padding:8px 16px; border-radius:6px; cursor:pointer;">Logout</button>
         </header>
 
-        <div class="app-container">
-            
-            <!-- LOGIN SECTION -->
-            <div id="loginSection" class="login-section">
-                <h2 style="margin-bottom: 20px;">Connect Service</h2>
-                
-                <div class="method-tabs">
+        <!-- Login -->
+        <div id="loginView" class="container">
+            <div class="login-container">
+                <div class="tabs">
                     <button class="tab-btn active" onclick="switchTab('xtream')">Xtream Codes</button>
                     <button class="tab-btn" onclick="switchTab('m3u')">M3U Playlist</button>
                 </div>
-
-                <!-- Xtream Form -->
-                <form id="xtreamForm" onsubmit="loginXtream(event)">
+                
+                <form id="formXtream" onsubmit="loginXtream(event)">
                     <div class="form-group">
                         <label>Server URL</label>
-                        <input type="text" id="xtreamUrl" placeholder="http://example.com" required>
+                        <input type="text" id="xUrl" placeholder="http://server.com:8080" required>
                     </div>
                     <div class="form-group">
                         <label>Username</label>
-                        <input type="text" id="xtreamUsername" required>
+                        <input type="text" id="xUser" required>
                     </div>
                     <div class="form-group">
                         <label>Password</label>
-                        <input type="password" id="xtreamPassword" required>
+                        <input type="password" id="xPass" required>
                     </div>
                     <button type="submit" class="btn-submit">Connect</button>
                 </form>
 
-                <!-- M3U Form -->
-                <form id="m3uForm" class="hidden" onsubmit="loginM3U(event)">
+                <form id="formM3U" class="hidden" onsubmit="loginM3U(event)">
                     <div class="form-group">
                         <label>Playlist URL</label>
-                        <input type="text" id="m3uUrl" placeholder="http://example.com/playlist.m3u" required>
+                        <input type="text" id="mUrl" placeholder="http://example.com/playlist.m3u" required>
                     </div>
                     <button type="submit" class="btn-submit">Connect</button>
                 </form>
             </div>
+        </div>
 
-            <!-- PLAYER SECTION -->
-            <div id="playerSection" class="player-layout hidden">
-                <div class="player-main">
-                    <div class="video-container" id="videoContainer">
-                        <video id="videoPlayer" playsinline></video>
-                        
-                        <!-- Stats Overlay -->
-                        <div id="nerdStats" class="stats-overlay hidden">
-                            <div>RES: <span id="stat-res">-</span></div>
-                            <div>BIT: <span id="stat-bit">-</span> Mbps</div>
-                            <div>BUF: <span id="stat-buf">-</span> s</div>
-                        </div>
-
-                        <!-- Controls -->
-                        <div class="controls-overlay">
-                            <div class="control-group">
-                                <button class="control-btn" onclick="toggleMute()">
-                                    <span id="muteIcon">🔊</span>
-                                </button>
-                                <input type="range" min="0" max="1" step="0.1" onchange="setVolume(this.value)" style="width: 80px;">
-                                <button class="control-btn" onclick="toggleStats()" title="Stats for Nerds">📊</button>
-                            </div>
-                            <div class="control-group">
-                                <button class="control-btn" onclick="togglePiP()">📺</button>
-                                <button class="control-btn" onclick="castVideo()">📡</button>
-                                <button class="control-btn" onclick="toggleFullscreen()">⛶</button>
-                            </div>
-                        </div>
+        <!-- Player -->
+        <div id="playerView" class="player-layout hidden">
+            <div class="main-stage">
+                <div class="video-wrapper" id="videoWrapper">
+                    <video id="videoPlayer" playsinline></video>
+                    
+                    <!-- Stats -->
+                    <div id="statsBox" class="stats-box hidden">
+                        <div>RES: <span id="statRes">-</span></div>
+                        <div>BIT: <span id="statBit">-</span> Mbps</div>
+                        <div>BUF: <span id="statBuf">-</span> s</div>
+                        <div>CODEC: <span id="statCodec">-</span></div>
                     </div>
-                    <div style="padding: 20px; background: var(--secondary-black); border-radius: 12px;">
-                        <h2 id="currentChannelName">Select a channel</h2>
+
+                    <!-- Controls -->
+                    <div class="controls">
+                        <div class="ctrl-group">
+                            <button class="ctrl-btn" onclick="toggleMute()"><span id="muteIcon">🔊</span></button>
+                            <input type="range" min="0" max="1" step="0.1" onchange="setVol(this.value)" style="width: 80px; margin-left: 10px;">
+                            <button class="ctrl-btn" onclick="toggleStats()" title="Stats">📊</button>
+                        </div>
+                        <div class="ctrl-group">
+                            <button class="ctrl-btn" onclick="togglePiP()">📺</button>
+                            <button class="ctrl-btn" onclick="cast()">📡</button>
+                            <button class="ctrl-btn" onclick="toggleFull()">⛶</button>
+                        </div>
                     </div>
                 </div>
-
-                <div class="player-sidebar">
-                    <div class="sidebar-tabs">
-                        <button class="sidebar-tab active" onclick="switchSidebar('categories')" id="tab-cat">Categories</button>
-                        <button class="sidebar-tab" onclick="switchSidebar('channels')" id="tab-chan">Channels</button>
-                        <button class="sidebar-tab" onclick="switchSidebar('guide')" id="tab-guide">Guide</button>
-                    </div>
-                    
-                    <div id="list-categories" class="sidebar-content"></div>
-                    <div id="list-channels" class="sidebar-content hidden"></div>
-                    <div id="list-guide" class="sidebar-content hidden">
-                        <div style="padding: 20px; text-align: center; color: var(--gray);">EPG Coming Soon</div>
-                    </div>
+                <div style="padding: 20px;">
+                    <h2 id="channelTitle" style="font-weight: 300;">Select a channel</h2>
                 </div>
             </div>
 
+            <div class="sidebar">
+                <div class="sb-tabs">
+                    <button class="sb-tab active" onclick="nav('cats')" id="tab-cats">Categories</button>
+                    <button class="sb-tab" onclick="nav('chans')" id="tab-chans">Channels</button>
+                    <button class="sb-tab" onclick="nav('guide')" id="tab-guide">Guide</button>
+                </div>
+                <div id="list-cats" class="sb-list"></div>
+                <div id="list-chans" class="sb-list hidden"></div>
+                <div id="list-guide" class="sb-list hidden" style="text-align: center; color: #666; padding-top: 40px;">Guide Coming Soon</div>
+            </div>
         </div>
     </div>
 
-    <!-- ERROR MODAL -->
-    <div id="errorModal" class="modal-overlay">
+    <!-- Error Modal -->
+    <div id="errModal" class="modal-overlay">
         <div class="modal">
             <h3 style="color: #ff4444; margin-bottom: 15px;">⚠️ Connection Failed</h3>
-            <p id="errorMsg" style="color: var(--gray); margin-bottom: 20px; line-height: 1.6;"></p>
-            <div id="selfHostInfo" class="hidden">
-                <p><strong>Solution: Self-Host RABBIT</strong></p>
-                <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; font-family: monospace; margin: 10px 0;">
+            <p id="errMsg" style="color: #ccc; margin-bottom: 20px; line-height: 1.5;"></p>
+            <div id="selfHost" class="hidden">
+                <p style="color: var(--cobalt-blue); margin-bottom: 10px;"><strong>Solution: Self-Host</strong></p>
+                <div style="background: #000; padding: 10px; font-family: monospace; border-radius: 6px; margin-bottom: 15px;">
                     1. Download RABBIT<br>2. python -m http.server 8000
                 </div>
-                <a href="SELF_HOSTING.md" target="_blank" style="color: var(--cobalt-blue);">View Instructions</a>
+                <a href="SELF_HOSTING.md" target="_blank" style="color: white;">View Instructions</a>
             </div>
-            <button class="btn-submit" onclick="closeModal()" style="margin-top: 20px;">Close</button>
+            <button onclick="closeErr()" class="btn-submit" style="margin-top: 20px;">Close</button>
         </div>
     </div>
 
     <script>
-        // --- STATE & PROXIES ---
+        // --- STATE ---
         let hls = null;
-        let statsInterval = null;
-        let session = { categories: [], channels: [], activeCat: null };
+        let statsTimer = null;
+        let session = { cats: [], chans: [], activeCat: null };
         const PROXIES = [
             { url: 'https://ether.tfplus.stream/proxy?url=', name: 'Primary Proxy' },
             { url: 'https://corsproxy.io/?url=', name: 'Backup Proxy 1' },
             { url: 'https://thingproxy.freeboard.io/fetch/', name: 'Backup Proxy 2' }
         ];
 
-        // --- NAVIGATION ---
+        // --- INIT ---
         function launchApp() {
             document.getElementById('landingPage').classList.add('hidden');
             document.getElementById('appPage').classList.add('active');
-            checkSession();
-        }
-        
-        function switchTab(tab) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('form').forEach(f => f.classList.add('hidden'));
-            
-            if(tab === 'xtream') {
-                document.querySelectorAll('.tab-btn')[0].classList.add('active');
-                document.getElementById('xtreamForm').classList.remove('hidden');
-            } else {
-                document.querySelectorAll('.tab-btn')[1].classList.add('active');
-                document.getElementById('m3uForm').classList.remove('hidden');
-            }
-        }
-
-        function switchSidebar(view) {
-            document.querySelectorAll('.sidebar-tab').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.sidebar-content').forEach(c => c.classList.add('hidden'));
-            
-            document.getElementById(`tab-${view}`).classList.add('active');
-            document.getElementById(`list-${view}`).classList.remove('hidden');
-            
-            if (view === 'channels' && !session.activeCat && session.categories.length > 0) {
-                loadCategory(session.categories[0].id);
-            }
-        }
-
-        function checkSession() {
-            const saved = sessionStorage.getItem('rabbitSession');
-            if(saved) {
-                session = JSON.parse(saved);
+            if(sessionStorage.getItem('rabbitSess')) {
+                session = JSON.parse(sessionStorage.getItem('rabbitSess'));
                 startPlayer();
             }
         }
+        
+        function switchTab(t) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('form').forEach(f => f.classList.add('hidden'));
+            if(t==='xtream') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('formXtream').classList.remove('hidden');
+            } else {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('formM3U').classList.remove('hidden');
+            }
+        }
 
-        // --- CONNECTION LOGIC ---
+        function nav(view) {
+            document.querySelectorAll('.sb-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.sb-list').forEach(l => l.classList.add('hidden'));
+            document.getElementById(`tab-${view}`).classList.add('active');
+            document.getElementById(`list-${view}`).classList.remove('hidden');
+            
+            if(view === 'chans' && !session.activeCat && session.cats.length) loadCat(session.cats[0].id);
+        }
+
+        // --- NETWORK ---
         async function smartFetch(url, btn, type='json') {
             btn.textContent = 'Direct Connection...';
             try {
                 const res = await fetch(url, { headers: { 'X-User-Agent': 'IPTVSmartersPro' } });
-                if(res.ok) {
-                    window.lastProxy = '';
-                    return type==='json' ? res.json() : res.text();
-                }
-            } catch(e) {}
+                if(res.ok) { window.lastProxy=''; return type==='json'?res.json():res.text(); }
+            } catch(e){}
 
             for(const p of PROXIES) {
                 btn.textContent = `Using ${p.name}...`;
                 try {
                     const res = await fetch(p.url + encodeURIComponent(url));
-                    if(res.ok) {
-                        window.lastProxy = p.url;
-                        return type==='json' ? res.json() : res.text();
-                    }
-                } catch(e) {}
+                    if(res.ok) { window.lastProxy=p.url; return type==='json'?res.json():res.text(); }
+                } catch(e){}
             }
-            throw new Error('Connection failed. Try self-hosting.');
+            throw new Error('Connection failed. Service might be HTTP only. Try self-hosting.');
         }
 
         async function loginXtream(e) {
             e.preventDefault();
-            const url = document.getElementById('xtreamUrl').value.replace(///$/, '');
-            const user = document.getElementById('xtreamUsername').value;
-            const pass = document.getElementById('xtreamPassword').value;
+            const url = document.getElementById('xUrl').value.replace(///$/, '');
+            const user = document.getElementById('xUser').value;
+            const pass = document.getElementById('xPass').value;
             const btn = e.target.querySelector('button');
-            const originalText = btn.textContent;
-            
+            const orig = btn.textContent;
+
             try {
-                // 1. Get Categories
                 btn.textContent = 'Fetching Categories...';
-                const catUrl = `${url}/player_api.php?username=${user}&password=${pass}&action=get_live_categories`;
-                const cats = await smartFetch(catUrl, btn);
+                const cats = await smartFetch(`${url}/player_api.php?username=${user}&password=${pass}&action=get_live_categories`, btn);
                 
-                // 2. Get Streams
                 btn.textContent = 'Fetching Channels...';
-                const streamUrl = `${url}/player_api.php?username=${user}&password=${pass}&action=get_live_streams`;
-                const streams = await smartFetch(streamUrl, btn);
-                
-                // 3. Process
-                session.categories = cats.map(c => ({ id: c.category_id, name: c.category_name }));
-                
+                const streams = await smartFetch(`${url}/player_api.php?username=${user}&password=${pass}&action=get_live_streams`, btn);
+
+                session.cats = cats.map(c => ({ id: c.category_id, name: c.category_name }));
                 const proxy = window.lastProxy || '';
-                session.channels = streams.map(s => {
-                    let streamUrl = `${url}/live/${user}/${pass}/${s.stream_id}.m3u8`;
-                    if(proxy) streamUrl = proxy + encodeURIComponent(streamUrl);
-                    
-                    return {
-                        name: s.name,
-                        logo: s.stream_icon,
-                        cat_id: s.category_id,
-                        url: streamUrl
-                    };
+                
+                session.chans = streams.map(s => {
+                    let link = `${url}/live/${user}/${pass}/${s.stream_id}.m3u8`;
+                    if(proxy) link = proxy + encodeURIComponent(link);
+                    return { name: s.name, logo: s.stream_icon, cat: s.category_id, url: link };
                 });
 
-                sessionStorage.setItem('rabbitSession', JSON.stringify(session));
-                startPlayer();
+                saveSess();
             } catch(err) {
-                showError(err.message, true);
-                btn.textContent = originalText;
+                showErr(err.message, true);
+                btn.textContent = orig;
             }
         }
 
         async function loginM3U(e) {
             e.preventDefault();
-            const url = document.getElementById('m3uUrl').value;
+            const url = document.getElementById('mUrl').value;
             const btn = e.target.querySelector('button');
-            const originalText = btn.textContent;
+            const orig = btn.textContent;
 
             try {
                 const data = await smartFetch(url, btn, 'text');
                 btn.textContent = 'Parsing...';
                 
                 const lines = data.split('\n');
-                const catSet = new Set();
+                const cSet = new Set();
                 const proxy = window.lastProxy || '';
-                
-                let current = {};
-                session.channels = [];
-                
+                session.chans = [];
+                let curr = {};
+
                 lines.forEach(line => {
                     line = line.trim();
                     if(line.startsWith('#EXTINF')) {
-                        const grp = line.match(/group-title="([^"]*)"/);
-                        const group = grp ? grp[1] : 'Uncategorized';
-                        catSet.add(group);
+                        const g = line.match(/group-title="([^"]*)"/);
+                        const group = g ? g[1] : 'Uncategorized';
+                        cSet.add(group);
                         const parts = line.split(',');
-                        current = { name: parts[parts.length-1].trim(), cat_id: group };
+                        curr = { name: parts[parts.length-1].trim(), cat: group };
                     } else if(line && !line.startsWith('#')) {
                         let link = line;
                         if(proxy) link = proxy + encodeURIComponent(link);
-                        if(current.name) {
-                            session.channels.push({ ...current, url: link });
-                            current = {};
+                        if(curr.name) {
+                            session.chans.push({ ...curr, url: link });
+                            curr = {};
                         }
                     }
                 });
                 
-                session.categories = Array.from(catSet).map(c => ({ id: c, name: c }));
-                sessionStorage.setItem('rabbitSession', JSON.stringify(session));
-                startPlayer();
+                session.cats = Array.from(cSet).map(c => ({ id: c, name: c }));
+                saveSess();
             } catch(err) {
-                showError(err.message, true);
-                btn.textContent = originalText;
+                showErr(err.message, true);
+                btn.textContent = orig;
             }
+        }
+
+        function saveSess() {
+            sessionStorage.setItem('rabbitSess', JSON.stringify(session));
+            startPlayer();
         }
 
         function startPlayer() {
-            document.getElementById('loginSection').classList.add('hidden');
-            document.getElementById('playerSection').classList.remove('hidden');
+            document.getElementById('loginView').classList.add('hidden');
+            document.getElementById('playerView').classList.remove('hidden');
             
-            const catList = document.getElementById('list-categories');
-            catList.innerHTML = '';
-            
-            session.categories.forEach(cat => {
-                const div = document.createElement('div');
-                div.className = 'list-item';
-                div.textContent = cat.name;
-                div.onclick = () => loadCategory(cat.id);
-                catList.appendChild(div);
+            const cl = document.getElementById('list-cats');
+            cl.innerHTML = '';
+            session.cats.forEach(c => {
+                const d = document.createElement('div');
+                d.className = 'list-item';
+                d.textContent = c.name;
+                d.onclick = () => loadCat(c.id);
+                cl.appendChild(d);
             });
         }
 
-        function loadCategory(id) {
+        function loadCat(id) {
             session.activeCat = id;
-            switchSidebar('channels');
+            nav('chans');
+            const cl = document.getElementById('list-chans');
+            cl.innerHTML = '';
             
-            const chanList = document.getElementById('list-channels');
-            chanList.innerHTML = '';
-            
-            const filtered = session.channels.filter(c => c.cat_id == id);
-            filtered.forEach(ch => {
-                const div = document.createElement('div');
-                div.className = 'list-item';
-                div.innerHTML = `
-                    <div class="item-icon" style="background-image: url('${ch.logo || ''}')"></div>
-                    <span>${ch.name}</span>
-                `;
-                div.onclick = () => playStream(ch);
-                chanList.appendChild(div);
+            session.chans.filter(c => c.cat == id).forEach(ch => {
+                const d = document.createElement('div');
+                d.className = 'list-item';
+                d.innerHTML = `<img src="${ch.logo||''}" class="ch-logo" onerror="this.style.display='none'"> <span>${ch.name}</span>`;
+                d.onclick = () => play(ch);
+                cl.appendChild(d);
             });
         }
 
-        function playStream(channel) {
-            document.getElementById('currentChannelName').textContent = channel.name;
-            const video = document.getElementById('videoPlayer');
+        function play(ch) {
+            document.getElementById('channelTitle').textContent = ch.name;
+            const v = document.getElementById('videoPlayer');
             
-            if (Hls.isSupported()) {
+            if(Hls.isSupported()) {
                 if(hls) hls.destroy();
                 hls = new Hls();
-                hls.loadSource(channel.url);
-                hls.attachMedia(video);
-                hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
-            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                video.src = channel.url;
-                video.addEventListener('loadedmetadata', () => video.play());
+                hls.loadSource(ch.url);
+                hls.attachMedia(v);
+                hls.on(Hls.Events.MANIFEST_PARSED, () => v.play());
+            } else if(v.canPlayType('application/vnd.apple.mpegurl')) {
+                v.src = ch.url;
+                v.play();
             }
-            
             startStats();
         }
 
         // --- CONTROLS ---
         function toggleMute() {
-            const vid = document.getElementById('videoPlayer');
-            vid.muted = !vid.muted;
-            document.getElementById('muteIcon').textContent = vid.muted ? '🔇' : '🔊';
+            const v = document.getElementById('videoPlayer');
+            v.muted = !v.muted;
+            document.getElementById('muteIcon').textContent = v.muted?'🔇':'🔊';
         }
-        function setVolume(v) { document.getElementById('videoPlayer').volume = v; }
-        async function togglePiP() {
-            try {
-                if(document.pictureInPictureElement) await document.exitPictureInPicture();
-                else await document.getElementById('videoPlayer').requestPictureInPicture();
-            } catch(e){}
+        function setVol(val) { document.getElementById('videoPlayer').volume = val; }
+        function togglePiP() {
+            if(document.pictureInPictureElement) document.exitPictureInPicture();
+            else document.getElementById('videoPlayer').requestPictureInPicture();
         }
-        function toggleFullscreen() {
-            const el = document.getElementById('videoContainer');
-            if(!document.fullscreenElement) el.requestFullscreen();
-            else document.exitFullscreen();
+        function toggleFull() {
+            const el = document.getElementById('videoWrapper');
+            if(document.fullscreenElement) document.exitFullscreen();
+            else el.requestFullscreen();
         }
-        function castVideo() { alert('Cast coming soon'); }
-        function logout() {
-            sessionStorage.removeItem('rabbitSession');
-            location.reload();
-        }
-        
-        // --- ERROR ---
-        function showError(msg, isSelf) {
-            document.getElementById('errorMsg').textContent = msg;
-            if(isSelf) document.getElementById('selfHostInfo').classList.remove('hidden');
-            document.getElementById('errorModal').classList.add('active');
-        }
-        function closeModal() { document.getElementById('errorModal').classList.remove('active'); }
+        function cast() { alert('Cast Not Supported Yet'); }
+        function logout() { sessionStorage.removeItem('rabbitSess'); location.reload(); }
 
         // --- STATS ---
-        function toggleStats() { document.getElementById('nerdStats').classList.toggle('hidden'); }
+        function toggleStats() { document.getElementById('statsBox').classList.toggle('hidden'); }
         function startStats() {
-            if(statsInterval) clearInterval(statsInterval);
-            statsInterval = setInterval(() => {
+            if(statsTimer) clearInterval(statsTimer);
+            statsTimer = setInterval(() => {
                 const v = document.getElementById('videoPlayer');
-                document.getElementById('stat-res').textContent = `${v.videoWidth}x${v.videoHeight}`;
-                if(v.buffered.length) {
-                     document.getElementById('stat-buf').textContent = (v.buffered.end(v.buffered.length-1) - v.currentTime).toFixed(1);
-                }
-                if(hls && hls.levels && hls.currentLevel >= 0) {
-                     document.getElementById('stat-bit').textContent = (hls.levels[hls.currentLevel].bitrate/1000000).toFixed(2);
+                document.getElementById('statRes').textContent = `${v.videoWidth}x${v.videoHeight}`;
+                if(v.buffered.length) document.getElementById('statBuf').textContent = (v.buffered.end(v.buffered.length-1)-v.currentTime).toFixed(1);
+                if(hls && hls.levels && hls.currentLevel>=0) {
+                    const l = hls.levels[hls.currentLevel];
+                    document.getElementById('statBit').textContent = (l.bitrate/1000000).toFixed(2);
+                    document.getElementById('statCodec').textContent = l.videoCodec;
                 }
             }, 1000);
         }
+
+        // --- MODAL ---
+        function showErr(msg, self) {
+            document.getElementById('errMsg').textContent = msg;
+            if(self) document.getElementById('selfHost').classList.remove('hidden');
+            document.getElementById('errModal').classList.add('active');
+        }
+        function closeErr() { document.getElementById('errModal').classList.remove('active'); }
 
     </script>
 </body>
