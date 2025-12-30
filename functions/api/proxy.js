@@ -8,7 +8,7 @@ export async function onRequest({ request }) {
 
   const upstream = await fetch(target, {
     headers: {
-      "User-Agent": "Mozilla/5.0",
+      "User-Agent": "IPTVSmartersPro",
       "Accept": "*/*",
       "Range": request.headers.get("Range") || ""
     }
